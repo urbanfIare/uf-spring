@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot API 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .result {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>Spring Boot API 테스트</h1>
+    
+    <div class="container">
+        <h2>1. Hello API 테스트</h2>
+        <button onclick="testHello()">Hello API 호출</button>
+        <div id="helloResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. 사용자 목록 조회</h2>
+        <button onclick="getAllUsers()">모든 사용자 조회</button>
+        <div id="usersResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>3. 새 사용자 생성</h2>
+        <input type="text" id="userName" placeholder="이름" value="홍길동">
+        <input type="email" id="userEmail" placeholder="이메일" value="hong@example.com">
+        <input type="number" id="userAge" placeholder="나이" value="30">
+        <button onclick="createUser()">사용자 생성</button>
+        <div id="createResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>4. 특정 사용자 조회</h2>
+        <input type="number" id="userId" placeholder="사용자 ID" value="1">
+        <button onclick="getUserById()">사용자 조회</button>
+        <div id="userResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>5. 이메일로 사용자 조회</h2>
+        <input type="email" id="userEmailSearch" placeholder="이메일" value="kim@example.com">
+        <button onclick="getUserByEmail()">이메일로 조회</button>
+        <div id="emailResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>6. 나이로 사용자 조회</h2>
+        <input type="number" id="userAgeSearch" placeholder="나이 이상" value="25">
+        <button onclick="getUsersByAge()">나이로 조회</button>
+        <div id="ageResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>7. 검색 기능 (QueryParam)</h2>
+        <input type="text" id="searchName" placeholder="이름 검색" value="김">
+        <input type="email" id="searchEmail" placeholder="이메일 검색" value="kim">
+        <input type="number" id="searchMinAge" placeholder="최소 나이" value="20">
+        <input type="number" id="searchMaxAge" placeholder="최대 나이" value="35">
+        <button onclick="searchUsers()">검색</button>
+        <div id="searchResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>8. 페이지네이션 (QueryParam)</h2>
+        <input type="number" id="pageNumber" placeholder="페이지 번호" value="0">
+        <input type="number" id="pageSize" placeholder="페이지 크기" value="2">
+        <button onclick="getUsersWithPagination()">페이지 조회</button>
+        <div id="pageResult" class="result"></div>
+    </div>
+
+    <div class="container">
+        <h2>9. 사용자 상세 정보 (PathVariable + QueryParam)</h2>
+        <input type="number" id="detailUserId" placeholder="사용자 ID" value="1">
+        <label><input type="checkbox" id="includeEmail"> 이메일 포함</label>
+        <label><input type="checkbox" id="includeAge"> 나이 포함</label>
+        <button onclick="getUserDetails()">상세 정보 조회</button>
+        <div id="detailResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+
+        async function testHello() {
+            try {
+                const response = await fetch(`${API_BASE}/hello`);
+                const data = await response.text();
+                document.getElementById('helloResult').textContent = data;
+            } catch (error) {
+                document.getElementById('helloResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getAllUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const data = await response.json();
+                document.getElementById('usersResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('usersResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function createUser() {
+            try {
+                const userData = {
+                    name: document.getElementById('userName').value,
+                    email: document.getElementById('userEmail').value,
+                    age: parseInt(document.getElementById('userAge').value)
+                };
+
+                const response = await fetch(`${API_BASE}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+
+                const data = await response.json();
+                document.getElementById('createResult').textContent = JSON.stringify(data, null, 2);
+                
+                // 사용자 목록 새로고침
+                getAllUsers();
+            } catch (error) {
+                document.getElementById('createResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getUserById() {
+            try {
+                const userId = document.getElementById('userId').value;
+                const response = await fetch(`${API_BASE}/users/${userId}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('userResult').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('userResult').textContent = '사용자를 찾을 수 없습니다.';
+                }
+            } catch (error) {
+                document.getElementById('userResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getUserByEmail() {
+            try {
+                const email = document.getElementById('userEmailSearch').value;
+                const response = await fetch(`${API_BASE}/users/email/${email}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('emailResult').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('emailResult').textContent = '사용자를 찾을 수 없습니다.';
+                }
+            } catch (error) {
+                document.getElementById('emailResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getUsersByAge() {
+            try {
+                const age = document.getElementById('userAgeSearch').value;
+                const response = await fetch(`${API_BASE}/users/age/${age}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('ageResult').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('ageResult').textContent = '사용자를 찾을 수 없습니다.';
+                }
+            } catch (error) {
+                document.getElementById('ageResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function searchUsers() {
+            try {
+                const name = document.getElementById('searchName').value;
+                const email = document.getElementById('searchEmail').value;
+                const minAge = document.getElementById('searchMinAge').value;
+                const maxAge = document.getElementById('searchMaxAge').value;
+                
+                const params = new URLSearchParams();
+                if (name) params.append('name', name);
+                if (email) params.append('email', email);
+                if (minAge) params.append('minAge', minAge);
+                if (maxAge) params.append('maxAge', maxAge);
+                
+                const response = await fetch(`${API_BASE}/users/search?${params}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('searchResult').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('searchResult').textContent = '검색에 실패했습니다.';
+                }
+            } catch (error) {
+                document.getElementById('searchResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getUsersWithPagination() {
+            try {
+                const page = document.getElementById('pageNumber').value;
+                const size = document.getElementById('pageSize').value;
+                
+                const params = new URLSearchParams();
+                params.append('page', page);
+                params.append('size', size);
+                
+                const response = await fetch(`${API_BASE}/users/page?${params}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('pageResult').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    document.getElementById('pageResult').textContent = '페이지 조회에 실패했습니다.';
+                }
+            } catch (error) {
+                document.getElementById('pageResult').textContent = '에러: ' + error.message;
+            }
+        }
+
+        async function getUserDetails() {
+            try {
+                const userId = document.getElementById('detailUserId').value;
+                const includeEmail = document.getElementById('includeEmail').checked;
+                const includeAge = document.getElementById('includeAge').checked;
+                
+                const params = new URLSearchParams();
+                params.append('includeEmail', includeEmail);
+                params.append('includeAge', includeAge);
+                
+                const response = await fetch(`${API_BASE}/users/${userId}/details?${params}`);
+                
+                if (response.ok) {
+                    const data = await response.text();
+                    document.getElementById('detailResult').textContent = data;
+                } else {
+                    document.getElementById('detailResult').textContent = '사용자를 찾을 수 없습니다.';
+                }
+            } catch (error) {
+                document.getElementById('detailResult').textContent = '에러: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html> 
