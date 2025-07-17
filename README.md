@@ -24,6 +24,17 @@
 - JPA 엔티티 설계
 - MySQL로 변경하는 방법
 
+### 5. [Spring Security 가이드](./src/docs/Spring_Security_Guide.md)
+- 사용자 인증 및 권한 관리
+- 비밀번호 암호화 (BCrypt)
+- 역할 기반 접근 제어
+- API 보안 설정
+
+### 6. [무한 리다이렉트 문제 해결 가이드](./src/docs/Spring_Security_Redirect_Issue_Guide.md)
+- ERR_TOO_MANY_REDIRECTS 오류 해결
+- REST API vs 웹 애플리케이션 설정
+- 인증 방식 선택 가이드
+
 ## 🚀 빠른 시작
 
 1. **프로젝트 실행**: `gradlew.bat bootRun`
@@ -39,7 +50,9 @@ src/
 │   ├── Spring_Boot_Parameters_Guide.md
 │   ├── Project_Structure_Guide.md
 │   ├── API_Endpoints.md
-│   └── Database_Setup_Guide.md
+│   ├── Database_Setup_Guide.md
+│   ├── Spring_Security_Guide.md
+│   └── Spring_Security_Redirect_Issue_Guide.md
 ├── main/
 │   ├── java/
 │   │   └── com/example/uf_spring/
@@ -57,9 +70,11 @@ src/
 ## 🛠️ 기술 스택
 
 - **Spring Boot 3.5.3**: 메인 프레임워크
+- **Spring Security**: 인증 및 권한 관리
 - **Spring Data JPA**: 데이터 접근 계층
-- **H2 Database**: 인메모리 데이터베이스
+- **H2 Database**: 파일 기반 데이터베이스
 - **Hibernate**: ORM (Object-Relational Mapping)
+- **BCrypt**: 비밀번호 암호화
 - **Lombok**: 보일러플레이트 코드 감소
 - **Gradle**: 빌드 도구
 

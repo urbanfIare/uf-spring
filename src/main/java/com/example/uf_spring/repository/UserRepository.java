@@ -18,4 +18,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     
     // 나이로 사용자 찾기 (나이가 특정 값 이상인 사용자들)
     List<User> findByAgeGreaterThanEqual(int age);
+    
+    // 이메일 존재 여부 확인
+    boolean existsByEmail(String email);
 } 

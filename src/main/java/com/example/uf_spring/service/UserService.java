@@ -1,6 +1,7 @@
 package com.example.uf_spring.service;
 
 import com.example.uf_spring.model.User;
+import com.example.uf_spring.model.Role;
 import com.example.uf_spring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,9 +22,7 @@ public class UserService {
     // 애플리케이션 시작 후 샘플 데이터 초기화
     public void initializeSampleData() {
         if (userRepository.count() == 0) {
-            userRepository.save(new User("김철수", "kim@example.com", 25));
-            userRepository.save(new User("이영희", "lee@example.com", 30));
-            userRepository.save(new User("박민수", "park@example.com", 28));
+            userRepository.save(new User("노경환", "admin", "admin", 31, Role.ADMIN));
         }
     }
     
