@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 계정 설정</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .login-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .login-info h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .login-info code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 관리자 계정 설정</h1>
+        
+        <!-- 초기화 상태 확인 -->
+        <div class="section">
+            <h2>📊 데이터베이스 초기화 상태</h2>
+            <button onclick="checkInitStatus()">상태 확인</button>
+            <div id="initStatusResult"></div>
+        </div>
+        
+        <!-- 관리자 계정 생성 -->
+        <div class="section">
+            <h2>👤 관리자 계정 생성</h2>
+            <p>아래 버튼을 클릭하여 기본 관리자 계정을 생성하세요.</p>
+            <button onclick="createAdminAccount()" class="btn-success">관리자 계정 생성</button>
+            <div id="createAdminResult"></div>
+        </div>
+        
+        <!-- 사용자 목록 -->
+        <div class="section">
+            <h2>👥 현재 사용자 목록</h2>
+            <button onclick="getAllUsers()">사용자 목록 조회</button>
+            <div id="usersResult"></div>
+        </div>
+        
+        <!-- 로그인 정보 -->
+        <div class="section">
+            <h2>🔑 로그인 정보</h2>
+            <div class="login-info">
+                <h3>기본 관리자 계정</h3>
+                <p><strong>이메일:</strong> <code>admin</code></p>
+                <p><strong>비밀번호:</strong> <code>admin</code></p>
+                <p><strong>역할:</strong> <code>ADMIN</code></p>
+            </div>
+            
+            <h3>📝 사용 방법</h3>
+            <ol>
+                <li>위의 "관리자 계정 생성" 버튼을 클릭하세요.</li>
+                <li>생성이 완료되면 <code>admin/admin</code>으로 로그인할 수 있습니다.</li>
+                <li>게시판 테스트는 <a href="/board.html" target="_blank">여기</a>를 클릭하세요.</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        // 초기화 상태 확인
+        async function checkInitStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/init-status`);
+                const result = await response.json();
+                
+                let html = '<h3>📊 초기화 상태</h3>';
+                html += `<p><strong>총 사용자 수:</strong> ${result.total_users}</p>`;
+                html += `<p><strong>관리자 계정 존재:</strong> ${result.has_admin ? '✅ 예' : '❌ 아니오'}</p>`;
+                html += `<p><strong>메시지:</strong> ${result.message}</p>`;
+                
+                if (result.has_admin) {
+                    html += '<div class="success">✅ 관리자 계정이 준비되었습니다!</div>';
+                } else {
+                    html += '<div class="info">ℹ️ 관리자 계정을 생성해주세요.</div>';
+                }
+                
+                document.getElementById('initStatusResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('initStatusResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 관리자 계정 생성
+        async function createAdminAccount() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/create-admin`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    let html = '<div class="success">';
+                    html += `<h3>✅ ${result.message}</h3>`;
+                    html += `<p><strong>사용자 ID:</strong> ${result.user.id}</p>`;
+                    html += `<p><strong>이름:</strong> ${result.user.name}</p>`;
+                    html += `<p><strong>이메일:</strong> ${result.user.email}</p>`;
+                    html += `<p><strong>역할:</strong> ${result.user.role}</p>`;
+                    html += '</div>';
+                    
+                    html += '<div class="login-info">';
+                    html += '<h3>🔑 로그인 정보</h3>';
+                    html += `<p><strong>이메일:</strong> <code>${result.login_info.email}</code></p>`;
+                    html += `<p><strong>비밀번호:</strong> <code>${result.login_info.password}</code></p>`;
+                    html += '</div>';
+                    
+                    document.getElementById('createAdminResult').innerHTML = html;
+                } else {
+                    document.getElementById('createAdminResult').innerHTML = 
+                        `<div class="error">❌ ${result.error}</div>`;
+                }
+            } catch (error) {
+                document.getElementById('createAdminResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 모든 사용자 조회
+        async function getAllUsers() {
+            try {
+                const response = await fetch(`${API_BASE}/admin/users`);
+                const result = await response.json();
+                
+                let html = '<h3>👥 사용자 목록</h3>';
+                html += `<p><strong>총 사용자 수:</strong> ${result.total_count}</p>`;
+                
+                if (result.users && result.users.length > 0) {
+                    html += '<div style="margin-top: 15px;">';
+                    result.users.forEach(user => {
+                        html += `
+                            <div style="border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px;">
+                                <p><strong>ID:</strong> ${user.id}</p>
+                                <p><strong>이름:</strong> ${user.name}</p>
+                                <p><strong>이메일:</strong> ${user.email}</p>
+                                <p><strong>나이:</strong> ${user.age}</p>
+                                <p><strong>역할:</strong> ${user.role}</p>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                } else {
+                    html += '<p>사용자가 없습니다.</p>';
+                }
+                
+                document.getElementById('usersResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('usersResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 페이지 로드 시 상태 확인
+        window.onload = function() {
+            checkInitStatus();
+        };
+    </script>
+</body>
+</html> 

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Security 이해하기</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            line-height: 1.6;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #555;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        
+        h3 {
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        .concept-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .example-box {
+            background-color: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+        
+        .flow-diagram {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        
+        .flow-step .number {
+            background-color: #007bff;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+        
+        .flow-step .arrow {
+            margin: 0 10px;
+            font-size: 20px;
+            color: #007bff;
+        }
+        
+        .test-section {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #e83e8c;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        .comparison-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Spring Security 이해하기</h1>
+        
+        <div class="concept-box">
+            <h3>💡 왜 Spring Security가 어려울까요?</h3>
+            <ul>
+                <li><strong>많은 개념</strong>: 인증, 인가, 세션, CSRF, JWT 등</li>
+                <li><strong>복잡한 설정</strong>: 어떤 URL은 공개, 어떤 URL은 로그인 필요</li>
+                <li><strong>보안 개념</strong>: 비밀번호 암호화, 역할 기반 접근 제어</li>
+            </ul>
+        </div>
+        
+        <h2>🎯 기본 개념 이해하기</h2>
+        
+        <h3>1. 인증(Authentication) vs 인가(Authorization)</h3>
+        <div class="example-box">
+            <p><strong>인증(Authentication)</strong>: "당신이 누구인가요?"</p>
+            <ul>
+                <li>로그인: 이메일/비밀번호로 사용자 확인</li>
+                <li>예: "admin/admin으로 로그인"</li>
+            </ul>
+            
+            <p><strong>인가(Authorization)</strong>: "당신이 무엇을 할 수 있나요?"</p>
+            <ul>
+                <li>권한 확인: 관리자는 모든 기능, 일반 사용자는 제한된 기능</li>
+                <li>예: "관리자만 사용자 목록을 볼 수 있음"</li>
+            </ul>
+        </div>
+        
+        <h3>2. 우리 프로젝트의 흐름</h3>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <div class="number">1</div>
+                <div>사용자가 웹사이트 접속</div>
+            </div>
+            <div class="flow-step">
+                <div class="arrow">↓</div>
+            </div>
+            <div class="flow-step">
+                <div class="number">2</div>
+                <div>Spring Security가 "이 페이지는 공개인가요?" 확인</div>
+            </div>
+            <div class="flow-step">
+                <div class="arrow">↓</div>
+            </div>
+            <div class="flow-step">
+                <div class="number">3</div>
+                <div>공개면 → 바로 페이지 보여줌 ✅</div>
+            </div>
+            <div class="flow-step">
+                <div class="arrow">↓</div>
+            </div>
+            <div class="flow-step">
+                <div class="number">4</div>
+                <div>공개가 아니면 → "로그인하세요!" 요구 ❌</div>
+            </div>
+        </div>
+        
+        <h2>🛠️ 현재 설정 (간단 버전)</h2>
+        
+        <div class="concept-box">
+            <h3>현재 우리 설정: 모든 것이 공개!</h3>
+            <p>개발을 쉽게 하기 위해 모든 페이지와 API를 공개로 설정했습니다.</p>
+            <code>.anyRequest().permitAll()</code>
+        </div>
+        
+        <h3>URL별 접근 권한</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>접근 권한</th>
+                    <th>설명</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>/admin-setup.html</code></td>
+                    <td>✅ 공개</td>
+                    <td>관리자 계정 생성 페이지</td>
+                </tr>
+                <tr>
+                    <td><code>/board.html</code></td>
+                    <td>✅ 공개</td>
+                    <td>게시판 테스트 페이지</td>
+                </tr>
+                <tr>
+                    <td><code>/api/posts/**</code></td>
+                    <td>✅ 공개</td>
+                    <td>게시글 관련 API</td>
+                </tr>
+                <tr>
+                    <td><code>/api/users</code></td>
+                    <td>✅ 공개</td>
+                    <td>사용자 목록 API</td>
+                </tr>
+                <tr>
+                    <td><code>/h2-console</code></td>
+                    <td>✅ 공개</td>
+                    <td>데이터베이스 관리 도구</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>🧪 테스트해보기</h2>
+        
+        <div class="test-section">
+            <h3>API 테스트</h3>
+            <button onclick="testPublicAPI()">공개 API 테스트</button>
+            <button onclick="testUserAPI()">사용자 API 테스트</button>
+            <button onclick="testPostAPI()">게시글 API 테스트</button>
+            <div id="testResult"></div>
+        </div>
+        
+        <h2>📚 단계별 학습</h2>
+        
+        <h3>1단계: 기본 개념 이해 ✅</h3>
+        <ul>
+            <li>인증 vs 인가 차이점</li>
+            <li>Spring Security의 기본 흐름</li>
+            <li>URL별 접근 제어 개념</li>
+        </ul>
+        
+        <h3>2단계: 간단한 보안 설정</h3>
+        <ul>
+            <li>특정 페이지만 로그인 필요하게 설정</li>
+            <li>관리자 전용 페이지 만들기</li>
+            <li>로그인/로그아웃 기능</li>
+        </ul>
+        
+        <h3>3단계: 고급 보안 기능</h3>
+        <ul>
+            <li>JWT 토큰 인증</li>
+            <li>OAuth2 소셜 로그인</li>
+            <li>CSRF 보호</li>
+        </ul>
+        
+        <h2>🔗 유용한 링크</h2>
+        
+        <div class="example-box">
+            <p><strong>📄 페이지들:</strong></p>
+            <ul>
+                <li><a href="/admin-setup.html" target="_blank">관리자 설정</a> - admin 계정 생성</li>
+                <li><a href="/board.html" target="_blank">게시판 테스트</a> - 게시글 기능 테스트</li>
+                <li><a href="/test.html" target="_blank">기본 테스트</a> - 간단한 API 테스트</li>
+            </ul>
+            
+            <p><strong>🗄️ 데이터베이스:</strong></p>
+            <ul>
+                <li><a href="/h2-console" target="_blank">H2 콘솔</a> - 데이터베이스 직접 확인</li>
+            </ul>
+        </div>
+        
+        <div class="concept-box">
+            <h3>💡 팁</h3>
+            <ul>
+                <li>현재는 모든 것이 공개이므로 로그인 없이 모든 기능을 테스트할 수 있습니다.</li>
+                <li>실제 서비스에서는 보안을 강화해야 합니다.</li>
+                <li>단계별로 학습하면서 점진적으로 보안을 추가하세요.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        async function testPublicAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/hello`);
+                const result = await response.text();
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="success">✅ 공개 API 테스트 성공: ${result}</div>`;
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+        
+        async function testUserAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const users = await response.json();
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="success">✅ 사용자 API 테스트 성공: ${users.length}명의 사용자</div>`;
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+        
+        async function testPostAPI() {
+            try {
+                const response = await fetch(`${API_BASE}/posts`);
+                const posts = await response.json();
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="success">✅ 게시글 API 테스트 성공: ${posts.length}개의 게시글</div>`;
+            } catch (error) {
+                document.getElementById('testResult').innerHTML = 
+                    `<div class="error">❌ 오류: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 

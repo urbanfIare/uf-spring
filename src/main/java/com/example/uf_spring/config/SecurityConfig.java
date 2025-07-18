@@ -28,21 +28,25 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authz -> authz
-                // 공개 엔드포인트
-                .requestMatchers("/api/auth/**", "/api/hello", "/test.html", "/h2-console/**").permitAll()
-                // 관리자 전용
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                // 인증된 사용자만
+                .requestMatchers(
+                    "/", // 루트 경로 추가!
+                    "/login", "/logout", "/api/auth/**", "/admin-setup.html", "/board.html", "/test.html",
+                    "/h2-console/**", "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.ico"
+                ).permitAll()
                 .anyRequest().authenticated()
             )
+            .formLogin(form -> form
+                .loginPage("/login")
+                .defaultSuccessUrl("/board.html", true)
+                .permitAll()
+            )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/h2-console/**")
+                .ignoringRequestMatchers("/h2-console/**", "/api/admin/create-admin")
             )
             .headers(headers -> headers
-                .frameOptions(frameOptions -> frameOptions.sameOrigin()) // H2 콘솔을 위한 설정
+                .frameOptions(frameOptions -> frameOptions.sameOrigin())
             )
-            .httpBasic(); // HTTP Basic 인증 활성화
-
+            .httpBasic();
         return http.build();
     }
 } 

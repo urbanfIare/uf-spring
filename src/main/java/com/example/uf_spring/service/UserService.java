@@ -4,6 +4,7 @@ import com.example.uf_spring.model.User;
 import com.example.uf_spring.model.Role;
 import com.example.uf_spring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,13 +17,31 @@ public class UserService {
     private UserRepository userRepository;
     
     public UserService() {
-        // 애플리케이션 시작 시 샘플 데이터 추가
+        System.out.println("🔧 UserService 생성자 호출됨");
     }
     
     // 애플리케이션 시작 후 샘플 데이터 초기화
     public void initializeSampleData() {
+        System.out.println("🔍 initializeSampleData() 시작");
+        System.out.println("📊 현재 DB 사용자 수: " + userRepository.count());
+        
         if (userRepository.count() == 0) {
-            userRepository.save(new User("노경환", "admin", "admin", 31, Role.ADMIN));
+            System.out.println("➕ 새 사용자 생성 중...");
+            
+            // BCrypt로 비밀번호 암호화
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            String encodedPassword = passwordEncoder.encode("admin");
+            
+            User newUser = new User("노경환", "admin", encodedPassword, 31, Role.ADMIN);
+            User savedUser = userRepository.save(newUser);
+            
+            System.out.println("✅ admin 계정이 생성되었습니다!");
+            System.out.println("👤 사용자명: admin");
+            System.out.println("🔑 비밀번호: admin");
+            System.out.println("🆔 생성된 사용자 ID: " + savedUser.getId());
+            System.out.println("🔐 암호화된 비밀번호: " + encodedPassword);
+        } else {
+            System.out.println("⚠️ 이미 사용자가 존재합니다. 새 사용자를 생성하지 않습니다.");
         }
     }
     

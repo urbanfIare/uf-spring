@@ -13,8 +13,14 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // 애플리케이션 시작 시 샘플 데이터 초기화
-        userService.initializeSampleData();
-        System.out.println("✅ 샘플 데이터가 초기화되었습니다!");
+        System.out.println("🚀 DataInitializer 시작!");
+        try {
+            // 애플리케이션 시작 시 샘플 데이터 초기화
+            userService.initializeSampleData();
+            System.out.println("✅ 샘플 데이터가 초기화되었습니다!");
+        } catch (Exception e) {
+            System.err.println("❌ 데이터 초기화 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 } 

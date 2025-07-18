@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게시판 시스템</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .section h2 {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+        
+        .btn-success {
+            background-color: #28a745;
+        }
+        
+        .btn-success:hover {
+            background-color: #218838;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .post-item {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+        
+        .post-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .post-meta {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .comment-item {
+            border-left: 3px solid #007bff;
+            padding: 10px;
+            margin: 10px 0;
+            background-color: #f8f9fa;
+        }
+        
+        .error {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .success {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 게시판 시스템 테스트</h1>
+        
+        <!-- 게시글 생성 -->
+        <div class="section">
+            <h2>📝 게시글 작성</h2>
+            <div class="form-group">
+                <label for="authorId">작성자 ID:</label>
+                <input type="number" id="authorId" value="1">
+            </div>
+            <div class="form-group">
+                <label for="title">제목:</label>
+                <input type="text" id="title" placeholder="게시글 제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="content">내용:</label>
+                <textarea id="content" placeholder="게시글 내용을 입력하세요"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="category">카테고리:</label>
+                <select id="category">
+                    <option value="GENERAL">일반</option>
+                    <option value="NOTICE">공지사항</option>
+                    <option value="QNA">질문과답변</option>
+                    <option value="FREE">자유게시판</option>
+                    <option value="TECH">기술</option>
+                    <option value="NEWS">뉴스</option>
+                </select>
+            </div>
+            <button onclick="createPost()">게시글 작성</button>
+            <div id="createResult"></div>
+        </div>
+        
+        <!-- 게시글 목록 -->
+        <div class="section">
+            <h2>📋 게시글 목록</h2>
+            <button onclick="getAllPosts()">전체 게시글 조회</button>
+            <button onclick="getPopularPosts()">인기 게시글</button>
+            <button onclick="getRecentPosts()">최근 게시글</button>
+            <div id="postsResult"></div>
+        </div>
+        
+        <!-- 게시글 검색 -->
+        <div class="section">
+            <h2>🔍 게시글 검색</h2>
+            <div class="form-group">
+                <label for="searchKeyword">검색어:</label>
+                <input type="text" id="searchKeyword" placeholder="검색어를 입력하세요">
+            </div>
+            <button onclick="searchPosts()">검색</button>
+            <div id="searchResult"></div>
+        </div>
+        
+        <!-- 게시글 상세 조회 -->
+        <div class="section">
+            <h2>📖 게시글 상세 조회</h2>
+            <div class="form-group">
+                <label for="postId">게시글 ID:</label>
+                <input type="number" id="postId" placeholder="게시글 ID를 입력하세요">
+            </div>
+            <button onclick="getPostById()">조회</button>
+            <button onclick="likePost()">좋아요</button>
+            <button onclick="unlikePost()">좋아요 취소</button>
+            <div id="postDetailResult"></div>
+        </div>
+        
+        <!-- 댓글 작성 -->
+        <div class="section">
+            <h2>💬 댓글 작성</h2>
+            <div class="form-group">
+                <label for="commentPostId">게시글 ID:</label>
+                <input type="number" id="commentPostId" placeholder="게시글 ID를 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="commentAuthorId">작성자 ID:</label>
+                <input type="number" id="commentAuthorId" value="1">
+            </div>
+            <div class="form-group">
+                <label for="commentContent">댓글 내용:</label>
+                <textarea id="commentContent" placeholder="댓글 내용을 입력하세요"></textarea>
+            </div>
+            <button onclick="createComment()">댓글 작성</button>
+            <div id="commentResult"></div>
+        </div>
+        
+        <!-- 댓글 조회 -->
+        <div class="section">
+            <h2>💬 댓글 조회</h2>
+            <div class="form-group">
+                <label for="commentPostIdView">게시글 ID:</label>
+                <input type="number" id="commentPostIdView" placeholder="게시글 ID를 입력하세요">
+            </div>
+            <button onclick="getComments()">댓글 조회</button>
+            <div id="commentsResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        
+        // 게시글 생성
+        async function createPost() {
+            const authorId = document.getElementById('authorId').value;
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const category = document.getElementById('category').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/posts?authorId=${authorId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: title,
+                        content: content,
+                        category: category
+                    })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('createResult').innerHTML = 
+                        `<div class="success">✅ 게시글이 성공적으로 작성되었습니다!<br>게시글 ID: ${result.id}</div>`;
+                } else {
+                    document.getElementById('createResult').innerHTML = 
+                        `<div class="error">❌ 게시글 작성에 실패했습니다.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('createResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 전체 게시글 조회
+        async function getAllPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/posts`);
+                const posts = await response.json();
+                
+                let html = '<h3>📋 전체 게시글 목록</h3>';
+                posts.forEach(post => {
+                    html += `
+                        <div class="post-item">
+                            <div class="post-title">${post.title}</div>
+                            <div class="post-meta">
+                                작성자: ${post.authorName} | 
+                                카테고리: ${post.category} | 
+                                조회수: ${post.viewCount} | 
+                                좋아요: ${post.likeCount} | 
+                                댓글: ${post.commentCount} | 
+                                작성일: ${new Date(post.createdAt).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('postsResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('postsResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 인기 게시글 조회
+        async function getPopularPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/posts/popular`);
+                const posts = await response.json();
+                
+                let html = '<h3>🔥 인기 게시글 (조회수 기준)</h3>';
+                posts.forEach(post => {
+                    html += `
+                        <div class="post-item">
+                            <div class="post-title">${post.title}</div>
+                            <div class="post-meta">
+                                작성자: ${post.authorName} | 
+                                조회수: ${post.viewCount} | 
+                                좋아요: ${post.likeCount} | 
+                                작성일: ${new Date(post.createdAt).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('postsResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('postsResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 최근 게시글 조회
+        async function getRecentPosts() {
+            try {
+                const response = await fetch(`${API_BASE}/posts/recent`);
+                const posts = await response.json();
+                
+                let html = '<h3>🕒 최근 게시글 (최근 7일)</h3>';
+                posts.forEach(post => {
+                    html += `
+                        <div class="post-item">
+                            <div class="post-title">${post.title}</div>
+                            <div class="post-meta">
+                                작성자: ${post.authorName} | 
+                                작성일: ${new Date(post.createdAt).toLocaleString()}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('postsResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('postsResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 게시글 검색
+        async function searchPosts() {
+            const keyword = document.getElementById('searchKeyword').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/posts/search?keyword=${encodeURIComponent(keyword)}`);
+                const posts = await response.json();
+                
+                let html = `<h3>🔍 검색 결과: "${keyword}"</h3>`;
+                if (posts.length === 0) {
+                    html += '<p>검색 결과가 없습니다.</p>';
+                } else {
+                    posts.forEach(post => {
+                        html += `
+                            <div class="post-item">
+                                <div class="post-title">${post.title}</div>
+                                <div class="post-meta">
+                                    작성자: ${post.authorName} | 
+                                    카테고리: ${post.category} | 
+                                    작성일: ${new Date(post.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('searchResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('searchResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 게시글 상세 조회
+        async function getPostById() {
+            const postId = document.getElementById('postId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}`);
+                const post = await response.json();
+                
+                let html = `
+                    <h3>📖 게시글 상세</h3>
+                    <div class="post-item">
+                        <div class="post-title">${post.title}</div>
+                        <div style="margin: 15px 0; padding: 15px; background-color: #f8f9fa; border-radius: 5px;">
+                            ${post.content}
+                        </div>
+                        <div class="post-meta">
+                            작성자: ${post.authorName} | 
+                            카테고리: ${post.category} | 
+                            조회수: ${post.viewCount} | 
+                            좋아요: ${post.likeCount} | 
+                            댓글: ${post.commentCount} | 
+                            작성일: ${new Date(post.createdAt).toLocaleString()}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('postDetailResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('postDetailResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 좋아요 증가
+        async function likePost() {
+            const postId = document.getElementById('postId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}/like`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    document.getElementById('postDetailResult').innerHTML = 
+                        `<div class="success">👍 좋아요가 증가했습니다!</div>`;
+                    getPostById(); // 게시글 정보 다시 조회
+                } else {
+                    document.getElementById('postDetailResult').innerHTML = 
+                        `<div class="error">❌ 좋아요 처리에 실패했습니다.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('postDetailResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 좋아요 감소
+        async function unlikePost() {
+            const postId = document.getElementById('postId').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/posts/${postId}/unlike`, {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    document.getElementById('postDetailResult').innerHTML = 
+                        `<div class="success">👎 좋아요가 감소했습니다!</div>`;
+                    getPostById(); // 게시글 정보 다시 조회
+                } else {
+                    document.getElementById('postDetailResult').innerHTML = 
+                        `<div class="error">❌ 좋아요 취소에 실패했습니다.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('postDetailResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 댓글 작성
+        async function createComment() {
+            const postId = document.getElementById('commentPostId').value;
+            const authorId = document.getElementById('commentAuthorId').value;
+            const content = document.getElementById('commentContent').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/comments/posts/${postId}?authorId=${authorId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content
+                    })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('commentResult').innerHTML = 
+                        `<div class="success">✅ 댓글이 성공적으로 작성되었습니다!<br>댓글 ID: ${result.id}</div>`;
+                } else {
+                    document.getElementById('commentResult').innerHTML = 
+                        `<div class="error">❌ 댓글 작성에 실패했습니다.</div>`;
+                }
+            } catch (error) {
+                document.getElementById('commentResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+        
+        // 댓글 조회
+        async function getComments() {
+            const postId = document.getElementById('commentPostIdView').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/comments/posts/${postId}`);
+                const comments = await response.json();
+                
+                let html = `<h3>💬 댓글 목록 (게시글 ID: ${postId})</h3>`;
+                if (comments.length === 0) {
+                    html += '<p>댓글이 없습니다.</p>';
+                } else {
+                    comments.forEach(comment => {
+                        html += `
+                            <div class="comment-item">
+                                <div style="font-weight: bold;">${comment.authorName}</div>
+                                <div style="margin: 5px 0;">${comment.content}</div>
+                                <div style="color: #666; font-size: 12px;">
+                                    작성일: ${new Date(comment.createdAt).toLocaleString()}
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                document.getElementById('commentsResult').innerHTML = html;
+            } catch (error) {
+                document.getElementById('commentsResult').innerHTML = 
+                    `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 
