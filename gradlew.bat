@@ -23,6 +23,9 @@
 @rem
 @rem ##########################################################################
 
+@rem 8080 포트 사용중인 프로세스 강제 종료
+for /f "tokens=5" %%a in ('netstat -aon ^| find ":8080" ^| find "LISTENING"') do taskkill /F /PID %%a >nul 2>&1
+
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
 

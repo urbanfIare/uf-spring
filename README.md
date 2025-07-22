@@ -35,11 +35,25 @@
 - REST API vs 웹 애플리케이션 설정
 - 인증 방식 선택 가이드
 
+### 7. [게시판 강화 기능 가이드](./src/docs/Board_Enhanced_Features_Guide.md)
+- 고급 검색 및 정렬 기능
+- 페이징 처리
+- 파일 업로드 시스템
+- 조회수 및 좋아요 기능
+
+### 8. [파일 업로드 시스템 가이드](./src/docs/File_Upload_System_Guide.md)
+- 파일 업로드 구현
+- 파일 다운로드 및 미리보기
+- 파일 관리 API
+- 보안 설정
+
 ## 🚀 빠른 시작
 
 1. **프로젝트 실행**: `gradlew.bat bootRun`
 2. **API 테스트**: `http://localhost:8080/test.html`
-3. **H2 콘솔**: `http://localhost:8080/h2-console`
+3. **고급 API 테스트**: `http://localhost:8080/api-enhanced.html`
+4. **게시판 (고급 기능)**: `http://localhost:8080/board-enhanced.html`
+5. **H2 콘솔**: `http://localhost:8080/h2-console`
 
 ## 📁 프로젝트 구조
 
@@ -52,7 +66,9 @@ src/
 │   ├── API_Endpoints.md
 │   ├── Database_Setup_Guide.md
 │   ├── Spring_Security_Guide.md
-│   └── Spring_Security_Redirect_Issue_Guide.md
+│   ├── Spring_Security_Redirect_Issue_Guide.md
+│   ├── Board_Enhanced_Features_Guide.md
+│   └── File_Upload_System_Guide.md
 ├── main/
 │   ├── java/
 │   │   └── com/example/uf_spring/
@@ -63,6 +79,11 @@ src/
 │   │       └── config/         # 설정 클래스
 │   └── resources/
 │       ├── static/             # 정적 파일 (HTML, CSS, JS)
+│       │   ├── test.html       # 기본 API 테스트
+│       │   ├── api-enhanced.html # 고급 API 테스트
+│       │   ├── board.html      # 기본 게시판
+│       │   ├── board-enhanced.html # 고급 게시판
+│       │   └── ...
 │       └── application.properties
 └── test/                      # 테스트 코드
 ```

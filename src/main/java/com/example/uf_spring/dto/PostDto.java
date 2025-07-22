@@ -2,6 +2,7 @@ package com.example.uf_spring.dto;
 
 import com.example.uf_spring.model.PostCategory;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class PostDto {
     
@@ -105,5 +106,71 @@ public class PostDto {
         public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
         public int getCommentCount() { return commentCount; }
         public void setCommentCount(int commentCount) { this.commentCount = commentCount; }
+    }
+    
+    // 검색 및 정렬을 위한 요청 DTO
+    public static class SearchRequest {
+        private String keyword;
+        private PostCategory category;
+        private String sortBy; // "latest", "popular", "mostLiked", "mostViewed"
+        private String sortOrder; // "asc", "desc"
+        private int page = 0;
+        private int size = 10;
+        
+        public SearchRequest() {}
+        
+        public SearchRequest(String keyword, PostCategory category, String sortBy, String sortOrder, int page, int size) {
+            this.keyword = keyword;
+            this.category = category;
+            this.sortBy = sortBy;
+            this.sortOrder = sortOrder;
+            this.page = page;
+            this.size = size;
+        }
+        
+        // getters and setters
+        public String getKeyword() { return keyword; }
+        public void setKeyword(String keyword) { this.keyword = keyword; }
+        public PostCategory getCategory() { return category; }
+        public void setCategory(PostCategory category) { this.category = category; }
+        public String getSortBy() { return sortBy; }
+        public void setSortBy(String sortBy) { this.sortBy = sortBy; }
+        public String getSortOrder() { return sortOrder; }
+        public void setSortOrder(String sortOrder) { this.sortOrder = sortOrder; }
+        public int getPage() { return page; }
+        public void setPage(int page) { this.page = page; }
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = size; }
+    }
+    
+    // 페이징 응답 DTO
+    public static class PageResponse {
+        private List<Response> content;
+        private int page;
+        private int size;
+        private long totalElements;
+        private int totalPages;
+        
+        public PageResponse() {}
+        
+        public PageResponse(List<Response> content, int page, int size, long totalElements, int totalPages) {
+            this.content = content;
+            this.page = page;
+            this.size = size;
+            this.totalElements = totalElements;
+            this.totalPages = totalPages;
+        }
+        
+        // getters and setters
+        public List<Response> getContent() { return content; }
+        public void setContent(List<Response> content) { this.content = content; }
+        public int getPage() { return page; }
+        public void setPage(int page) { this.page = page; }
+        public int getSize() { return size; }
+        public void setSize(int size) { this.size = size; }
+        public long getTotalElements() { return totalElements; }
+        public void setTotalElements(long totalElements) { this.totalElements = totalElements; }
+        public int getTotalPages() { return totalPages; }
+        public void setTotalPages(int totalPages) { this.totalPages = totalPages; }
     }
 } 

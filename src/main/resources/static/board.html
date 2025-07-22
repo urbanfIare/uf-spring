@@ -144,9 +144,40 @@
             border-radius: 5px;
             margin-top: 10px;
         }
+        .tag { display:inline-block; background:#e3e3ff; color:#333; border-radius:3px; padding:2px 7px; margin:0 2px; cursor:pointer; font-size:12px; }
+        .tag:hover { background:#b3b3ff; }
     </style>
 </head>
 <body>
+    <div id="notifyArea" style="position:fixed;top:20px;right:30px;z-index:3000;"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+let stompClient = null;
+function connectNotification() {
+  const socket = new SockJS('/ws/notify');
+  stompClient = Stomp.over(socket);
+  stompClient.connect({}, function(frame) {
+    stompClient.subscribe('/topic/notify', function(msg) {
+      showNotification(msg.body);
+    });
+  });
+}
+function showNotification(msg) {
+  const area = document.getElementById('notifyArea');
+  const div = document.createElement('div');
+  div.textContent = msg;
+  div.style.background = '#ffc107';
+  div.style.color = '#333';
+  div.style.padding = '12px 20px';
+  div.style.marginBottom = '10px';
+  div.style.borderRadius = '8px';
+  div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+  area.appendChild(div);
+  setTimeout(() => { div.remove(); }, 4000);
+}
+document.addEventListener('DOMContentLoaded', connectNotification);
+</script>
     <div class="container">
         <h1>🎯 게시판 시스템 테스트</h1>
         
@@ -175,6 +206,11 @@
                     <option value="TECH">기술</option>
                     <option value="NEWS">뉴스</option>
                 </select>
+            </div>
+            <div class="form-group">
+                <label for="tags">태그 (쉼표로 구분):</label>
+                <input type="text" id="tags" placeholder="예: spring,java,web" oninput="autocompleteTags(this)">
+                <div id="tagSuggestions" style="background:#fff;border:1px solid #ddd;display:none;position:absolute;z-index:10;"></div>
             </div>
             <button onclick="createPost()">게시글 작성</button>
             <div id="createResult"></div>
@@ -228,7 +264,7 @@
                 <label for="commentContent">댓글 내용:</label>
                 <textarea id="commentContent" placeholder="댓글 내용을 입력하세요"></textarea>
             </div>
-            <button onclick="createComment()">댓글 작성</button>
+            <button onclick="submitComment()">댓글 작성</button>
             <div id="commentResult"></div>
         </div>
         
@@ -253,6 +289,7 @@
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
             const category = document.getElementById('category').value;
+            const tags = document.getElementById('tags').value.split(',').map(t => t.trim()).filter(t => t);
             
             try {
                 const response = await fetch(`${API_BASE}/posts?authorId=${authorId}`, {
@@ -263,7 +300,8 @@
                     body: JSON.stringify({
                         title: title,
                         content: content,
-                        category: category
+                        category: category,
+                        tags: tags
                     })
                 });
                 
@@ -296,9 +334,15 @@
                                 작성자: ${post.authorName} | 
                                 카테고리: ${post.category} | 
                                 조회수: ${post.viewCount} | 
-                                좋아요: ${post.likeCount} | 
+                                <span id="like-count-${post.id}">좋아요: ${post.likeCount}</span> |
                                 댓글: ${post.commentCount} | 
                                 작성일: ${new Date(post.createdAt).toLocaleString()}
+                                <span class="tags">${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class='tag' onclick='searchByTag("${tag}")'>#${tag}</span>`).join(' ') : ''}</span>
+                            </div>
+                            <div style="margin-top:8px;">
+                                <button class="btn-success" onclick="likePostFromList(${post.id})">👍 좋아요</button>
+                                <button class="btn-danger" onclick="unlikePostFromList(${post.id})">👎 싫어요</button>
+                                <button class="btn" onclick="toggleBookmark(${post.id})" id="bookmark-btn-${post.id}">⭐ 북마크</button>
                             </div>
                         </div>
                     `;
@@ -420,6 +464,12 @@
                             좋아요: ${post.likeCount} | 
                             댓글: ${post.commentCount} | 
                             작성일: ${new Date(post.createdAt).toLocaleString()}
+                            <span class="tags">${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class='tag' onclick='searchByTag("${tag}")'>#${tag}</span>`).join(' ') : ''}</span>
+                        </div>
+                        <div style="margin-top: 15px;">
+                            <button class="btn-success" onclick="showEditPostModal(${post.id}, '${post.title.replace(/'/g, "&#39;")}', '${post.content.replace(/'/g, "&#39;")}', '${post.category}')">수정</button>
+                            <button class="btn-danger" onclick="deletePost(${post.id})">삭제</button>
+                            <button class="btn" onclick="showReportModal('post', ${post.id})">🚨 신고</button>
                         </div>
                     </div>
                 `;
@@ -478,7 +528,7 @@
         }
         
         // 댓글 작성
-        async function createComment() {
+        async function submitComment() {
             const postId = document.getElementById('commentPostId').value;
             const authorId = document.getElementById('commentAuthorId').value;
             const content = document.getElementById('commentContent').value;
@@ -539,6 +589,333 @@
                     `<div class="error">❌ 오류가 발생했습니다: ${error.message}</div>`;
             }
         }
+
+        // 게시글 수정 모달 추가 (body 하단에 삽입)
     </script>
+    <div id="editPostModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:1000; align-items:center; justify-content:center;">
+      <div style="background:white; padding:30px; border-radius:10px; min-width:300px; max-width:90vw; position:relative;">
+        <h3>게시글 수정</h3>
+        <input type="hidden" id="editPostId">
+        <div class="form-group">
+          <label for="editTitle">제목</label>
+          <input type="text" id="editTitle">
+        </div>
+        <div class="form-group">
+          <label for="editContent">내용</label>
+          <textarea id="editContent"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="editCategory">카테고리</label>
+          <select id="editCategory">
+            <option value="GENERAL">일반</option>
+            <option value="NOTICE">공지사항</option>
+            <option value="QNA">질문과답변</option>
+            <option value="FREE">자유게시판</option>
+            <option value="TECH">기술</option>
+            <option value="NEWS">뉴스</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="editAuthorId">작성자 ID</label>
+          <input type="number" id="editAuthorId" value="1">
+        </div>
+        <div class="form-group">
+          <label for="editTags">태그 (쉼표로 구분)</label>
+          <input type="text" id="editTags" placeholder="예: spring,java,web" oninput="autocompleteTags(this)">
+          <div id="editTagSuggestions" style="background:#fff;border:1px solid #ddd;display:none;position:absolute;z-index:10;"></div>
+        </div>
+        <button class="btn-success" onclick="submitEditPost()">저장</button>
+        <button class="btn-danger" onclick="closeEditPostModal()">취소</button>
+        <span style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:20px;" onclick="closeEditPostModal()">&times;</span>
+        <div id="editPostResult"></div>
+      </div>
+    </div>
+    <script>
+        // 게시글 수정 모달 표시
+        function showEditPostModal(id, title, content, category) {
+          document.getElementById('editPostId').value = id;
+          document.getElementById('editTitle').value = title;
+          document.getElementById('editContent').value = content;
+          document.getElementById('editCategory').value = category;
+          document.getElementById('editAuthorId').value = 1;
+          document.getElementById('editPostModal').style.display = 'flex';
+        }
+        function closeEditPostModal() {
+          document.getElementById('editPostModal').style.display = 'none';
+          document.getElementById('editPostResult').innerHTML = '';
+        }
+        // 게시글 수정 요청
+        async function submitEditPost() {
+          const id = document.getElementById('editPostId').value;
+          const title = document.getElementById('editTitle').value;
+          const content = document.getElementById('editContent').value;
+          const category = document.getElementById('editCategory').value;
+          const authorId = document.getElementById('editAuthorId').value;
+          const tags = document.getElementById('editTags').value.split(',').map(t => t.trim()).filter(t => t);
+          try {
+            const response = await fetch(`/api/posts/${id}?authorId=${authorId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ title, content, category, tags })
+            });
+            if (response.ok) {
+              document.getElementById('editPostResult').innerHTML = '<div class="success">✅ 게시글이 수정되었습니다.</div>';
+              setTimeout(() => {
+                closeEditPostModal();
+                getPostById();
+              }, 1000);
+            } else {
+              document.getElementById('editPostResult').innerHTML = '<div class="error">❌ 수정 실패</div>';
+            }
+          } catch (e) {
+            document.getElementById('editPostResult').innerHTML = `<div class="error">❌ 오류: ${e.message}</div>`;
+          }
+        }
+        // 게시글 삭제 요청
+        async function deletePost(id) {
+          const authorId = 1; // 실제로는 로그인 사용자 ID 사용
+          if (!confirm('정말 삭제하시겠습니까?')) return;
+          try {
+            const response = await fetch(`/api/posts/${id}?authorId=${authorId}`, { method: 'DELETE' });
+            if (response.ok) {
+              alert('삭제되었습니다.');
+              document.getElementById('postDetailResult').innerHTML = '';
+              getAllPosts();
+            } else {
+              alert('삭제 실패');
+            }
+          } catch (e) {
+            alert('오류: ' + e.message);
+          }
+        }
+
+        // 목록에서 좋아요/싫어요 처리 함수 추가
+        async function likePostFromList(postId) {
+            try {
+                const response = await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
+                if (response.ok) {
+                    const post = await response.json();
+                    document.getElementById(`like-count-${postId}`).textContent = `좋아요: ${post.likeCount}`;
+                } else {
+                    alert('좋아요 처리 실패');
+                }
+            } catch (e) {
+                alert('오류: ' + e.message);
+            }
+        }
+        async function unlikePostFromList(postId) {
+            try {
+                const response = await fetch(`/api/posts/${postId}/unlike`, { method: 'POST' });
+                if (response.ok) {
+                    const post = await response.json();
+                    document.getElementById(`like-count-${postId}`).textContent = `좋아요: ${post.likeCount}`;
+                } else {
+                    alert('싫어요 처리 실패');
+                }
+            } catch (e) {
+                alert('오류: ' + e.message);
+            }
+        }
+
+        // 북마크 토글 함수
+        async function toggleBookmark(postId) {
+            const userId = 1; // 실제로는 로그인 사용자 ID 사용
+            const btn = document.getElementById(`bookmark-btn-${postId}`);
+            try {
+                // 북마크 여부 확인
+                const res = await fetch(`/api/bookmarks/exists?userId=${userId}&postId=${postId}`);
+                const isBookmarked = await res.json();
+                if (isBookmarked) {
+                    // 이미 북마크 → 삭제
+                    await fetch(`/api/bookmarks?userId=${userId}&postId=${postId}`, { method: 'DELETE' });
+                    btn.textContent = '⭐ 북마크';
+                    btn.style.color = '';
+                } else {
+                    // 북마크 추가
+                    await fetch(`/api/bookmarks?userId=${userId}&postId=${postId}`, { method: 'POST' });
+                    btn.textContent = '★ 북마크됨';
+                    btn.style.color = '#ffc107';
+                }
+            } catch (e) {
+                alert('북마크 처리 오류: ' + e.message);
+            }
+        }
+
+        // 내 북마크 목록 조회 UI 추가 (body 하단에 삽입)
+    </script>
+    <div class="section">
+      <h2>⭐ 내 북마크 목록</h2>
+      <button onclick="getMyBookmarks()">내 북마크 조회</button>
+      <div id="myBookmarksResult"></div>
+    </div>
+    <script>
+async function getMyBookmarks() {
+    const userId = 1; // 실제로는 로그인 사용자 ID 사용
+    try {
+        const res = await fetch(`/api/bookmarks/user/${userId}`);
+        const list = await res.json();
+        let html = '<ul>';
+        if (list.length === 0) {
+            html += '<li>북마크한 게시글이 없습니다.</li>';
+        } else {
+            list.forEach(bm => {
+                html += `<li>[${bm.postId}] ${bm.postTitle} <span style='color:#888;'>(${new Date(bm.createdAt).toLocaleString()})</span></li>`;
+            });
+        }
+        html += '</ul>';
+        document.getElementById('myBookmarksResult').innerHTML = html;
+    } catch (e) {
+        document.getElementById('myBookmarksResult').innerHTML = `<div class='error'>오류: ${e.message}</div>`;
+    }
+}
+    </script>
+    <script>
+        async function autocompleteTags(input) {
+            const val = input.value.split(',').pop().trim();
+            const suggestionBox = input.id === 'editTags' ? document.getElementById('editTagSuggestions') : document.getElementById('tagSuggestions');
+            if (!val) { suggestionBox.style.display = 'none'; return; }
+            const res = await fetch(`/api/tags/autocomplete?keyword=${encodeURIComponent(val)}`);
+            const tags = await res.json();
+            if (tags.length === 0) { suggestionBox.style.display = 'none'; return; }
+            suggestionBox.innerHTML = tags.map(t => `<div style='padding:5px;cursor:pointer;' onclick='selectTagSuggestion("${input.id}","${t.name}")'>${t.name}</div>`).join('');
+            suggestionBox.style.display = 'block';
+            suggestionBox.style.position = 'absolute';
+            suggestionBox.style.width = input.offsetWidth + 'px';
+        }
+        function selectTagSuggestion(inputId, tag) {
+            const input = document.getElementById(inputId);
+            let arr = input.value.split(',');
+            arr[arr.length-1] = tag;
+            input.value = arr.join(',').replace(/,+/g, ',').replace(/^,|,$/g, '');
+            const suggestionBox = inputId === 'editTags' ? document.getElementById('editTagSuggestions') : document.getElementById('tagSuggestions');
+            suggestionBox.style.display = 'none';
+        }
+        async function searchByTag(tag) {
+            const res = await fetch(`/api/tags/${encodeURIComponent(tag)}/posts`);
+            const ids = await res.json();
+            if (ids.length === 0) {
+                document.getElementById('postsResult').innerHTML = '<div>해당 태그의 게시글이 없습니다.</div>';
+                return;
+            }
+            // 기존 getAllPosts와 유사하게 게시글 정보 조회
+            let html = `<h3>#${tag} 태그 게시글</h3>`;
+            for (const id of ids) {
+                const res2 = await fetch(`/api/posts/${id}`);
+                if (!res2.ok) continue;
+                const post = await res2.json();
+                html += `<div class='post-item'><div class='post-title'>${post.title}</div><div class='post-meta'>작성자: ${post.authorName} | 카테고리: ${post.category} | 조회수: ${post.viewCount} | <span id='like-count-${post.id}'>좋아요: ${post.likeCount}</span> | 댓글: ${post.commentCount} | 작성일: ${new Date(post.createdAt).toLocaleString()} <span class='tags'>${post.tags && post.tags.length > 0 ? post.tags.map(tag => `<span class='tag' onclick='searchByTag("${tag}")'>#${tag}</span>`).join(' ') : ''}</span></div></div>`;
+            }
+            document.getElementById('postsResult').innerHTML = html;
+        }
+    </script>
+    <div id="reportModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.3); z-index:2000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:30px; border-radius:10px; min-width:300px; max-width:90vw; position:relative;">
+    <h3>신고하기</h3>
+    <input type="hidden" id="reportTargetType">
+    <input type="hidden" id="reportTargetId">
+    <div class="form-group">
+      <label for="reportReason">신고 사유</label>
+      <textarea id="reportReason" placeholder="신고 사유를 입력하세요"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="reporterId">신고자 ID</label>
+      <input type="number" id="reporterId" value="1">
+    </div>
+    <button class="btn-danger" onclick="submitReport()">신고</button>
+    <button class="btn" onclick="closeReportModal()">취소</button>
+    <span style="position:absolute; top:10px; right:20px; cursor:pointer; font-size:20px;" onclick="closeReportModal()">&times;</span>
+    <div id="reportResult"></div>
+  </div>
+</div>
+<script>
+function showReportModal(type, id) {
+  document.getElementById('reportTargetType').value = type;
+  document.getElementById('reportTargetId').value = id;
+  document.getElementById('reportReason').value = '';
+  document.getElementById('reportResult').innerHTML = '';
+  document.getElementById('reportModal').style.display = 'flex';
+}
+function closeReportModal() {
+  document.getElementById('reportModal').style.display = 'none';
+}
+async function submitReport() {
+  const type = document.getElementById('reportTargetType').value;
+  const id = document.getElementById('reportTargetId').value;
+  const reason = document.getElementById('reportReason').value;
+  const reporterId = document.getElementById('reporterId').value;
+  if (!reason) {
+    document.getElementById('reportResult').innerHTML = '<div class="error">사유를 입력하세요.</div>';
+    return;
+  }
+  const body = {
+    reporterId: reporterId,
+    reason: reason
+  };
+  if (type === 'post') body.postId = id;
+  if (type === 'comment') body.commentId = id;
+  try {
+    const res = await fetch('/api/reports', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      document.getElementById('reportResult').innerHTML = '<div class="success">신고가 접수되었습니다.</div>';
+      setTimeout(closeReportModal, 1000);
+    } else {
+      document.getElementById('reportResult').innerHTML = '<div class="error">신고 실패</div>';
+    }
+  } catch (e) {
+    document.getElementById('reportResult').innerHTML = `<div class="error">오류: ${e.message}</div>`;
+  }
+}
+</script>
+<div class="section">
+  <h2>🚨 신고 내역 (관리자)</h2>
+  <button onclick="getReports()">신고 목록 조회</button>
+  <select id="reportStatusFilter">
+    <option value="">전체</option>
+    <option value="PENDING">미처리</option>
+    <option value="RESOLVED">처리됨</option>
+    <option value="REJECTED">기각</option>
+  </select>
+  <div id="reportsResult"></div>
+</div>
+<script>
+async function getReports() {
+  const status = document.getElementById('reportStatusFilter').value;
+  let url = '/api/reports';
+  if (status) url += `?status=${status}`;
+  try {
+    const res = await fetch(url);
+    const list = await res.json();
+    let html = '<table border="1" style="width:100%;font-size:13px;"><tr><th>ID</th><th>신고자</th><th>게시글ID</th><th>댓글ID</th><th>사유</th><th>상태</th><th>처리</th><th>일시</th></tr>';
+    list.forEach(r => {
+      html += `<tr><td>${r.id}</td><td>${r.reporterName}</td><td>${r.postId||''}</td><td>${r.commentId||''}</td><td>${r.reason}</td><td>${r.status}</td><td>`;
+      if (r.status === 'PENDING') {
+        html += `<button onclick="updateReportStatus(${r.id},'RESOLVED')">처리</button> <button onclick="updateReportStatus(${r.id},'REJECTED')">기각</button>`;
+      }
+      html += `</td><td>${new Date(r.createdAt).toLocaleString()}</td></tr>`;
+    });
+    html += '</table>';
+    document.getElementById('reportsResult').innerHTML = html;
+  } catch (e) {
+    document.getElementById('reportsResult').innerHTML = `<div class='error'>오류: ${e.message}</div>`;
+  }
+}
+async function updateReportStatus(id, status) {
+  try {
+    const res = await fetch(`/api/reports/${id}?status=${status}`, { method: 'PUT' });
+    if (res.ok) {
+      alert('상태 변경 완료');
+      getReports();
+    } else {
+      alert('상태 변경 실패');
+    }
+  } catch (e) {
+    alert('오류: ' + e.message);
+  }
+}
+</script>
 </body>
 </html> 

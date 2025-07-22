@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 테스트 - 고급 기능</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .section-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+        
+        .section-content {
+            padding: 20px;
+        }
+        
+        .api-form {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .response {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .file-upload {
+            border: 2px dashed #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin: 10px 0;
+        }
+        
+        .file-upload.dragover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .file-list {
+            margin-top: 10px;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 API 테스트 - 고급 기능</h1>
+            <p>게시판 강화 기능과 파일 업로드 API 테스트</p>
+        </div>
+        
+        <div class="content">
+            <!-- 사용자 관리 -->
+            <div class="section">
+                <div class="section-header">👥 사용자 관리</div>
+                <div class="section-content">
+                    <form class="api-form" id="userForm">
+                        <div class="form-group">
+                            <label>사용자 생성</label>
+                            <input type="text" id="userName" placeholder="이름" required>
+                            <input type="email" id="userEmail" placeholder="이메일" required>
+                            <input type="password" id="userPassword" placeholder="비밀번호" required>
+                            <button type="submit" class="btn btn-primary">사용자 생성</button>
+                        </div>
+                    </form>
+                    <div id="userResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 게시글 관리 -->
+            <div class="section">
+                <div class="section-header">📝 게시글 관리</div>
+                <div class="section-content">
+                    <form class="api-form" id="postForm">
+                        <div class="form-group">
+                            <label>게시글 생성</label>
+                            <input type="text" id="postTitle" placeholder="제목" required>
+                            <select id="postCategory" required>
+                                <option value="GENERAL">일반</option>
+                                <option value="TECH">기술</option>
+                                <option value="LIFE">일상</option>
+                                <option value="HUMOR">유머</option>
+                            </select>
+                            <textarea id="postContent" placeholder="내용" rows="4" required></textarea>
+                            <input type="number" id="authorId" placeholder="작성자 ID" value="1" required>
+                            <button type="submit" class="btn btn-primary">게시글 생성</button>
+                        </div>
+                    </form>
+                    <div id="postResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 고급 검색 -->
+            <div class="section">
+                <div class="section-header">🔍 고급 검색</div>
+                <div class="section-content">
+                    <form class="api-form" id="searchForm">
+                        <div class="form-group">
+                            <label>검색 조건</label>
+                            <input type="text" id="searchKeyword" placeholder="검색어">
+                            <select id="searchCategory">
+                                <option value="">전체 카테고리</option>
+                                <option value="GENERAL">일반</option>
+                                <option value="TECH">기술</option>
+                                <option value="LIFE">일상</option>
+                                <option value="HUMOR">유머</option>
+                            </select>
+                            <select id="searchSortBy">
+                                <option value="latest">최신순</option>
+                                <option value="popular">인기순</option>
+                                <option value="mostLiked">좋아요순</option>
+                                <option value="mostViewed">조회수순</option>
+                            </select>
+                            <input type="number" id="searchPage" placeholder="페이지" value="0">
+                            <input type="number" id="searchSize" placeholder="페이지 크기" value="10">
+                            <button type="submit" class="btn btn-primary">검색</button>
+                        </div>
+                    </form>
+                    <div id="searchResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 파일 업로드 -->
+            <div class="section">
+                <div class="section-header">📎 파일 업로드</div>
+                <div class="section-content">
+                    <form class="api-form" id="fileForm">
+                        <div class="form-group">
+                            <label>파일 업로드</label>
+                            <input type="number" id="filePostId" placeholder="게시글 ID" required>
+                            <input type="number" id="fileUserId" placeholder="사용자 ID" value="1" required>
+                            <div class="file-upload" id="fileUpload">
+                                <p>📎 파일을 드래그하거나 클릭하여 업로드하세요</p>
+                                <input type="file" id="fileInput" multiple style="display: none;">
+                                <div class="file-list" id="fileList"></div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">파일 업로드</button>
+                        </div>
+                    </form>
+                    <div id="fileResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 게시글 조회 -->
+            <div class="section">
+                <div class="section-header">📋 게시글 조회</div>
+                <div class="section-content">
+                    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                        <button class="btn btn-primary" onclick="getAllPosts()">전체 게시글</button>
+                        <button class="btn btn-primary" onclick="getPopularPosts()">인기 게시글</button>
+                        <button class="btn btn-primary" onclick="getMostLikedPosts()">좋아요 많은 게시글</button>
+                        <button class="btn btn-primary" onclick="getRecentPosts()">최근 게시글</button>
+                    </div>
+                    <div id="postsResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 게시글 상세 -->
+            <div class="section">
+                <div class="section-header">📄 게시글 상세</div>
+                <div class="section-content">
+                    <form class="api-form" id="detailForm">
+                        <div class="form-group">
+                            <label>게시글 ID</label>
+                            <input type="number" id="detailPostId" placeholder="게시글 ID" required>
+                            <button type="submit" class="btn btn-primary">상세 조회</button>
+                        </div>
+                    </form>
+                    <div id="detailResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 좋아요 기능 -->
+            <div class="section">
+                <div class="section-header">❤️ 좋아요 기능</div>
+                <div class="section-content">
+                    <form class="api-form" id="likeForm">
+                        <div class="form-group">
+                            <label>게시글 ID</label>
+                            <input type="number" id="likePostId" placeholder="게시글 ID" required>
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" class="btn btn-success" onclick="likePost()">좋아요</button>
+                                <button type="button" class="btn btn-danger" onclick="unlikePost()">좋아요 취소</button>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="likeResponse" class="response"></div>
+                </div>
+            </div>
+            
+            <!-- 파일 관리 -->
+            <div class="section">
+                <div class="section-header">📁 파일 관리</div>
+                <div class="section-content">
+                    <form class="api-form" id="fileManageForm">
+                        <div class="form-group">
+                            <label>게시글의 파일 조회</label>
+                            <input type="number" id="fileManagePostId" placeholder="게시글 ID" required>
+                            <button type="button" class="btn btn-primary" onclick="getFilesByPost()">파일 조회</button>
+                        </div>
+                    </form>
+                    <div id="fileManageResponse" class="response"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let uploadedFiles = [];
+        
+        // 파일 업로드 설정
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileUpload = document.getElementById('fileUpload');
+            const fileInput = document.getElementById('fileInput');
+            
+            fileUpload.addEventListener('click', () => fileInput.click());
+            fileUpload.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUpload.classList.add('dragover');
+            });
+            fileUpload.addEventListener('dragleave', () => {
+                fileUpload.classList.remove('dragover');
+            });
+            fileUpload.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUpload.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                handleFiles(files);
+            });
+            
+            fileInput.addEventListener('change', (e) => {
+                handleFiles(e.target.files);
+            });
+        });
+        
+        // 파일 처리
+        function handleFiles(files) {
+            uploadedFiles = Array.from(files);
+            displayFiles();
+        }
+        
+        // 파일 목록 표시
+        function displayFiles() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = uploadedFiles.map((file, index) => `
+                <div class="file-item">
+                    <span>📎 ${file.name} (${formatFileSize(file.size)})</span>
+                    <button type="button" onclick="removeFile(${index})" style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer;">삭제</button>
+                </div>
+            `).join('');
+        }
+        
+        // 파일 제거
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            displayFiles();
+        }
+        
+        // 파일 크기 포맷
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 사용자 생성
+        document.getElementById('userForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const userData = {
+                name: document.getElementById('userName').value,
+                email: document.getElementById('userEmail').value,
+                password: document.getElementById('userPassword').value
+            };
+            
+            try {
+                const response = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const result = await response.json();
+                document.getElementById('userResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('userResponse').textContent = '오류: ' + error.message;
+            }
+        });
+        
+        // 게시글 생성
+        document.getElementById('postForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const postData = {
+                title: document.getElementById('postTitle').value,
+                content: document.getElementById('postContent').value,
+                category: document.getElementById('postCategory').value
+            };
+            
+            try {
+                const response = await fetch(`/api/posts?authorId=${document.getElementById('authorId').value}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(postData)
+                });
+                
+                const result = await response.json();
+                document.getElementById('postResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postResponse').textContent = '오류: ' + error.message;
+            }
+        });
+        
+        // 고급 검색
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const searchData = {
+                keyword: document.getElementById('searchKeyword').value,
+                category: document.getElementById('searchCategory').value || null,
+                sortBy: document.getElementById('searchSortBy').value,
+                sortOrder: 'desc',
+                page: parseInt(document.getElementById('searchPage').value),
+                size: parseInt(document.getElementById('searchSize').value)
+            };
+            
+            try {
+                const response = await fetch('/api/posts/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(searchData)
+                });
+                
+                const result = await response.json();
+                document.getElementById('searchResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('searchResponse').textContent = '오류: ' + error.message;
+            }
+        });
+        
+        // 파일 업로드
+        document.getElementById('fileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (uploadedFiles.length === 0) {
+                alert('업로드할 파일을 선택해주세요.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('postId', document.getElementById('filePostId').value);
+            formData.append('userId', document.getElementById('fileUserId').value);
+            
+            for (let file of uploadedFiles) {
+                formData.append('file', file);
+            }
+            
+            try {
+                const response = await fetch('/api/files/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                document.getElementById('fileResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('fileResponse').textContent = '오류: ' + error.message;
+            }
+        });
+        
+        // 전체 게시글 조회
+        async function getAllPosts() {
+            try {
+                const response = await fetch('/api/posts');
+                const result = await response.json();
+                document.getElementById('postsResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postsResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 인기 게시글 조회
+        async function getPopularPosts() {
+            try {
+                const response = await fetch('/api/posts/popular');
+                const result = await response.json();
+                document.getElementById('postsResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postsResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 좋아요 많은 게시글 조회
+        async function getMostLikedPosts() {
+            try {
+                const response = await fetch('/api/posts/most-liked');
+                const result = await response.json();
+                document.getElementById('postsResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postsResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 최근 게시글 조회
+        async function getRecentPosts() {
+            try {
+                const response = await fetch('/api/posts/recent');
+                const result = await response.json();
+                document.getElementById('postsResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('postsResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 게시글 상세 조회
+        document.getElementById('detailForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const postId = document.getElementById('detailPostId').value;
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}`);
+                const result = await response.json();
+                document.getElementById('detailResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('detailResponse').textContent = '오류: ' + error.message;
+            }
+        });
+        
+        // 좋아요
+        async function likePost() {
+            const postId = document.getElementById('likePostId').value;
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}/like`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                document.getElementById('likeResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('likeResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 좋아요 취소
+        async function unlikePost() {
+            const postId = document.getElementById('likePostId').value;
+            
+            try {
+                const response = await fetch(`/api/posts/${postId}/unlike`, {
+                    method: 'POST'
+                });
+                const result = await response.json();
+                document.getElementById('likeResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('likeResponse').textContent = '오류: ' + error.message;
+            }
+        }
+        
+        // 게시글의 파일 조회
+        async function getFilesByPost() {
+            const postId = document.getElementById('fileManagePostId').value;
+            
+            try {
+                const response = await fetch(`/api/files/post/${postId}`);
+                const result = await response.json();
+                document.getElementById('fileManageResponse').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('fileManageResponse').textContent = '오류: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html> 

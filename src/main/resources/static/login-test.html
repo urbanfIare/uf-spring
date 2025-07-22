@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 로그인 테스트 페이지</h1>
+        
+        <div id="status"></div>
+        
+        <h2>📋 테스트 항목</h2>
+        <button onclick="testLogin()">로그인 상태 확인</button>
+        <button onclick="testAPI()">API 접근 테스트</button>
+        <button onclick="goToLogin()">로그인 페이지로 이동</button>
+        <button onclick="goToBoard()">게시판으로 이동</button>
+        
+        <div id="result"></div>
+        
+        <h2>💡 문제 해결 방법</h2>
+        <ol>
+            <li><strong>브라우저 캐시 삭제</strong>: Ctrl + Shift + Delete</li>
+            <li><strong>시크릿 모드</strong>: Ctrl + Shift + N</li>
+            <li><strong>쿠키 삭제</strong>: 개발자도구 → Application → Cookies</li>
+            <li><strong>서버 재시작</strong>: 애플리케이션 완전 재시작</li>
+        </ol>
+    </div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/users');
+                if (response.ok) {
+                    document.getElementById('status').innerHTML = 
+                        '<div class="success">✅ 로그인 성공! API 접근 가능</div>';
+                } else {
+                    document.getElementById('status').innerHTML = 
+                        '<div class="error">❌ 로그인 필요 또는 권한 없음</div>';
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = 
+                    '<div class="error">❌ 오류: ' + error.message + '</div>';
+            }
+        }
+        
+        async function testAPI() {
+            try {
+                const response = await fetch('/api/hello');
+                const result = await response.text();
+                document.getElementById('result').innerHTML = 
+                    '<div class="info">📡 API 응답: ' + result + '</div>';
+            } catch (error) {
+                document.getElementById('result').innerHTML = 
+                    '<div class="error">❌ API 오류: ' + error.message + '</div>';
+            }
+        }
+        
+        function goToLogin() {
+            window.location.href = '/login';
+        }
+        
+        function goToBoard() {
+            window.location.href = '/board.html';
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.onload = function() {
+            testLogin();
+        };
+    </script>
+</body>
+</html> 

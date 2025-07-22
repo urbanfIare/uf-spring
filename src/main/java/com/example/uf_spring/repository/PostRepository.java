@@ -8,6 +8,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
@@ -40,4 +42,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     // 최근 게시글 조회 (최근 7일)
     @Query("SELECT p FROM Post p WHERE p.createdAt >= :startDate AND p.isDeleted = false ORDER BY p.createdAt DESC")
     List<Post> findRecentPosts(@Param("startDate") java.time.LocalDateTime startDate);
+    
+    // 페이징을 위한 메서드들
+    Page<Post> findByIsDeletedFalse(Pageable pageable);
+    
+    Page<Post> findByCategoryAndIsDeletedFalse(PostCategory category, Pageable pageable);
+    
+    @Query("SELECT p FROM Post p WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) AND p.isDeleted = false")
+    Page<Post> findByTitleContainingOrContentContainingAndIsDeletedFalse(@Param("keyword") String keyword, Pageable pageable);
+    
+    @Query("SELECT p FROM Post p WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) AND p.category = :category AND p.isDeleted = false")
+    Page<Post> findByTitleContainingOrContentContainingAndCategoryAndIsDeletedFalse(
+            @Param("keyword") String keyword, @Param("category") PostCategory category, Pageable pageable);
 } 

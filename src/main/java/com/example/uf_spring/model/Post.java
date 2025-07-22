@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -45,6 +46,17 @@ public class Post {
     
     @Column(nullable = false)
     private boolean isDeleted = false;
+    
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<FileUpload> files;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "post_tags",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private List<Tag> tags;
     
     // 생성자
     public Post(String title, String content, User author, PostCategory category) {

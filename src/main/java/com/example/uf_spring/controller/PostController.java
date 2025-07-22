@@ -136,4 +136,26 @@ public class PostController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    // 고급 검색 및 페이징
+    @PostMapping("/search")
+    public ResponseEntity<PostDto.PageResponse> searchPostsWithPaging(@RequestBody PostDto.SearchRequest request) {
+        try {
+            PostDto.PageResponse response = postService.searchPostsWithPaging(request);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+    
+    // 조회수 증가 (별도 엔드포인트)
+    @PostMapping("/{id}/view")
+    public ResponseEntity<Void> incrementViewCount(@PathVariable Long id) {
+        try {
+            postService.incrementViewCount(id);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 } 
