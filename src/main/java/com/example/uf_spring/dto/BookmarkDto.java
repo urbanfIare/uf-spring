@@ -9,6 +9,14 @@ public class BookmarkDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
+    public static class CreateRequest {
+        private Long userId;
+        private Long postId;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Response {
         private Long id;
         private Long userId;

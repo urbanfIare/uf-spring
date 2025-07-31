@@ -7,7 +7,7 @@ import com.example.uf_spring.model.User;
 import com.example.uf_spring.repository.PostRepository;
 import com.example.uf_spring.repository.CommentRepository;
 import com.example.uf_spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,16 +22,12 @@ import org.springframework.data.domain.Sort;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PostService {
 
-    @Autowired
-    private PostRepository postRepository;
-    
-    @Autowired
-    private CommentRepository commentRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     // 게시글 생성
     public PostDto.Response createPost(PostDto.CreateRequest request, Long authorId) {

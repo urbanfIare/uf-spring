@@ -10,7 +10,7 @@ import com.example.uf_spring.repository.ReportRepository;
 import com.example.uf_spring.repository.UserRepository;
 import com.example.uf_spring.repository.PostRepository;
 import com.example.uf_spring.repository.CommentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +19,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class ReportService {
-    @Autowired
-    private ReportRepository reportRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private CommentRepository commentRepository;
+    private final ReportRepository reportRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     // 신고 등록
     public ReportDto.Response createReport(ReportDto.CreateRequest req) {
@@ -59,6 +56,10 @@ public class ReportService {
         report.setStatus(status);
         Report saved = reportRepository.save(report);
         return toDto(saved);
+    }
+
+    public void deleteReport(Long reportId) {
+        reportRepository.deleteById(reportId);
     }
 
     private ReportDto.Response toDto(Report report) {

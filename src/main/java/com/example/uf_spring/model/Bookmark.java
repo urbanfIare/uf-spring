@@ -32,4 +32,6 @@ public class Bookmark {
         this.post = post;
         this.createdAt = LocalDateTime.now();
     }
+    
+
 } 

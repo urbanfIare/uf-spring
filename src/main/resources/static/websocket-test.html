@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket 실시간 알림 테스트</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .messages {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 8px;
+            border-radius: 3px;
+            background-color: white;
+            border-left: 4px solid #007bff;
+        }
+        .notification { border-left-color: #28a745; }
+        .chat { border-left-color: #ffc107; }
+        .general { border-left-color: #17a2b8; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .endpoint-info {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 WebSocket 실시간 알림 테스트</h1>
+        
+        <div class="status" id="status">연결 상태 확인 중...</div>
+        
+        <div class="endpoint-info">
+            <h3>📡 WebSocket 엔드포인트</h3>
+            <ul>
+                <li><strong>/ws/notify</strong> - 알림용 WebSocket</li>
+                <li><strong>/ws/chat</strong> - 채팅용 WebSocket</li>
+                <li><strong>/ws</strong> - 일반용 WebSocket</li>
+            </ul>
+        </div>
+        
+        <div class="controls">
+            <h3>🔧 연결 관리</h3>
+            <button onclick="connectNotify()" id="connectNotify">알림 WebSocket 연결</button>
+            <button onclick="connectChat()" id="connectChat">채팅 WebSocket 연결</button>
+            <button onclick="connectGeneral()" id="connectGeneral">일반 WebSocket 연결</button>
+            <button onclick="disconnectAll()" id="disconnectAll">모든 연결 해제</button>
+        </div>
+        
+        <div class="controls">
+            <h3>📤 메시지 전송</h3>
+            <input type="text" id="messageInput" placeholder="메시지를 입력하세요...">
+            <button onclick="sendMessage()">전송</button>
+            <button onclick="testNotification()">테스트 알림</button>
+        </div>
+        
+        <div class="controls">
+            <h3>📨 수신된 메시지</h3>
+            <div class="messages" id="messages"></div>
+            <button onclick="clearMessages()">메시지 지우기</button>
+        </div>
+    </div>
+
+    <script>
+        let notifySocket = null;
+        let chatSocket = null;
+        let generalSocket = null;
+        
+        function updateStatus(message, isConnected) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = 'status ' + (isConnected ? 'connected' : 'disconnected');
+        }
+        
+        function addMessage(message, type = 'general') {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ' + type;
+            messageDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight;
+        }
+        
+        function connectNotify() {
+            if (notifySocket && notifySocket.readyState === WebSocket.OPEN) {
+                addMessage('이미 알림 WebSocket에 연결되어 있습니다.', 'notification');
+                return;
+            }
+            
+            notifySocket = new WebSocket('ws://localhost:8080/ws/notify');
+            
+            notifySocket.onopen = function() {
+                updateStatus('🔔 알림 WebSocket 연결됨', true);
+                addMessage('알림 WebSocket에 연결되었습니다!', 'notification');
+                document.getElementById('connectNotify').disabled = true;
+            };
+            
+            notifySocket.onmessage = function(event) {
+                addMessage(event.data, 'notification');
+            };
+            
+            notifySocket.onclose = function() {
+                updateStatus('🔔 알림 WebSocket 연결 해제됨', false);
+                addMessage('알림 WebSocket 연결이 해제되었습니다.', 'notification');
+                document.getElementById('connectNotify').disabled = false;
+            };
+            
+            notifySocket.onerror = function(error) {
+                addMessage('알림 WebSocket 오류: ' + error, 'notification');
+            };
+        }
+        
+        function connectChat() {
+            if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                addMessage('이미 채팅 WebSocket에 연결되어 있습니다.', 'chat');
+                return;
+            }
+            
+            chatSocket = new WebSocket('ws://localhost:8080/ws/chat');
+            
+            chatSocket.onopen = function() {
+                updateStatus('💬 채팅 WebSocket 연결됨', true);
+                addMessage('채팅 WebSocket에 연결되었습니다!', 'chat');
+                document.getElementById('connectChat').disabled = true;
+            };
+            
+            chatSocket.onmessage = function(event) {
+                addMessage(event.data, 'chat');
+            };
+            
+            chatSocket.onclose = function() {
+                updateStatus('💬 채팅 WebSocket 연결 해제됨', false);
+                addMessage('채팅 WebSocket 연결이 해제되었습니다.', 'chat');
+                document.getElementById('connectChat').disabled = false;
+            };
+            
+            chatSocket.onerror = function(error) {
+                addMessage('채팅 WebSocket 오류: ' + error, 'chat');
+            };
+        }
+        
+        function connectGeneral() {
+            if (generalSocket && generalSocket.readyState === WebSocket.OPEN) {
+                addMessage('이미 일반 WebSocket에 연결되어 있습니다.', 'general');
+                return;
+            }
+            
+            generalSocket = new WebSocket('ws://localhost:8080/ws');
+            
+            generalSocket.onopen = function() {
+                updateStatus('📡 일반 WebSocket 연결됨', true);
+                addMessage('일반 WebSocket에 연결되었습니다!', 'general');
+                document.getElementById('connectGeneral').disabled = true;
+            };
+            
+            generalSocket.onmessage = function(event) {
+                addMessage(event.data, 'general');
+            };
+            
+            generalSocket.onclose = function() {
+                updateStatus('📡 일반 WebSocket 연결 해제됨', false);
+                addMessage('일반 WebSocket 연결이 해제되었습니다.', 'general');
+                document.getElementById('connectGeneral').disabled = false;
+            };
+            
+            generalSocket.onerror = function(error) {
+                addMessage('일반 WebSocket 오류: ' + error, 'general');
+            };
+        }
+        
+        function disconnectAll() {
+            if (notifySocket) {
+                notifySocket.close();
+                notifySocket = null;
+            }
+            if (chatSocket) {
+                chatSocket.close();
+                chatSocket = null;
+            }
+            if (generalSocket) {
+                generalSocket.close();
+                generalSocket = null;
+            }
+            updateStatus('모든 WebSocket 연결 해제됨', false);
+            addMessage('모든 WebSocket 연결이 해제되었습니다.', 'general');
+        }
+        
+        function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            if (!message.trim()) return;
+            
+            if (notifySocket && notifySocket.readyState === WebSocket.OPEN) {
+                notifySocket.send(message);
+                addMessage('전송: ' + message, 'notification');
+            } else if (chatSocket && chatSocket.readyState === WebSocket.OPEN) {
+                chatSocket.send(message);
+                addMessage('전송: ' + message, 'chat');
+            } else if (generalSocket && generalSocket.readyState === WebSocket.OPEN) {
+                generalSocket.send(message);
+                addMessage('전송: ' + message, 'general');
+            } else {
+                addMessage('연결된 WebSocket이 없습니다.', 'general');
+            }
+            
+            document.getElementById('messageInput').value = '';
+        }
+        
+        function testNotification() {
+            fetch('/api/notify/test-realtime', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                addMessage('테스트 알림 전송됨: ' + data.message, 'notification');
+            })
+            .catch(error => {
+                addMessage('테스트 알림 전송 실패: ' + error, 'notification');
+            });
+        }
+        
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+        
+        // Enter 키로 메시지 전송
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        // 페이지 로드 시 상태 초기화
+        updateStatus('WebSocket 연결 대기 중...', false);
+        addMessage('WebSocket 테스트 페이지가 로드되었습니다.', 'general');
+    </script>
+</body>
+</html> 

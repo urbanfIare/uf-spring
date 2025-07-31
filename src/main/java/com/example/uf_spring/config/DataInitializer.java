@@ -1,15 +1,15 @@
 package com.example.uf_spring.config;
 
 import com.example.uf_spring.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
     @Override
     public void run(String... args) throws Exception {

@@ -1,7 +1,7 @@
 package com.example.uf_spring.controller;
 
 import com.example.uf_spring.config.DatabaseConfig;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,10 +10,10 @@ import java.io.File;
 
 @RestController
 @RequestMapping("/api/database")
+@RequiredArgsConstructor
 public class DatabaseController {
 
-    @Autowired
-    private DatabaseConfig databaseConfig;
+    private final DatabaseConfig databaseConfig;
 
     @GetMapping("/info")
     public String getDatabaseInfo() {

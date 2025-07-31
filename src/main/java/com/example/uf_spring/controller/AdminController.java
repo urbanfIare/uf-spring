@@ -3,9 +3,9 @@ package com.example.uf_spring.controller;
 import com.example.uf_spring.model.User;
 import com.example.uf_spring.model.Role;
 import com.example.uf_spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,10 +13,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
+@RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 관리자 계정 생성 (개발용)
     @PostMapping("/create-admin")
@@ -31,7 +32,6 @@ public class AdminController {
             }
 
             // BCrypt로 비밀번호 암호화
-            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             String encodedPassword = passwordEncoder.encode("admin");
 
             // admin 계정 생성

@@ -7,7 +7,7 @@ import com.example.uf_spring.model.Post;
 import com.example.uf_spring.repository.BookmarkRepository;
 import com.example.uf_spring.repository.UserRepository;
 import com.example.uf_spring.repository.PostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,13 +17,16 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class BookmarkService {
-    @Autowired
-    private BookmarkRepository bookmarkRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private PostRepository postRepository;
+    private final BookmarkRepository bookmarkRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+
+    // 북마크 추가 (CreateRequest 사용)
+    public BookmarkDto.Response addBookmark(BookmarkDto.CreateRequest request) {
+        return addBookmark(request.getUserId(), request.getPostId());
+    }
 
     // 북마크 추가
     public BookmarkDto.Response addBookmark(Long userId, Long postId) {
@@ -37,6 +40,16 @@ public class BookmarkService {
         Bookmark bookmark = new Bookmark(user, post);
         Bookmark saved = bookmarkRepository.save(bookmark);
         return toDto(saved);
+    }
+
+    // 북마크 삭제 (ID로)
+    public boolean deleteBookmark(Long bookmarkId) {
+        Optional<Bookmark> bookmark = bookmarkRepository.findById(bookmarkId);
+        if (bookmark.isPresent()) {
+            bookmarkRepository.delete(bookmark.get());
+            return true;
+        }
+        return false;
     }
 
     // 북마크 삭제
@@ -54,6 +67,11 @@ public class BookmarkService {
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         List<Bookmark> bookmarks = bookmarkRepository.findByUser(user);
         return bookmarks.stream().map(this::toDto).collect(Collectors.toList());
+    }
+
+    // 사용자별 북마크 조회 (별칭)
+    public List<BookmarkDto.Response> getBookmarksByUserId(Long userId) {
+        return getBookmarksByUser(userId);
     }
 
     // 북마크 여부 확인

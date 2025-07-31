@@ -7,7 +7,7 @@ import com.example.uf_spring.model.User;
 import com.example.uf_spring.repository.FileUploadRepository;
 import com.example.uf_spring.repository.PostRepository;
 import com.example.uf_spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,16 +22,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class FileUploadService {
 
-    @Autowired
-    private FileUploadRepository fileUploadRepository;
-    
-    @Autowired
-    private PostRepository postRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
+    private final FileUploadRepository fileUploadRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
     
     @Value("${file.upload.path:uploads}")
     private String uploadPath;

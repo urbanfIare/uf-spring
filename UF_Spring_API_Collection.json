@@ -1,0 +1,709 @@
+{
+	"info": {
+		"_postman_id": "uf-spring-api-collection",
+		"name": "UF Spring API Collection",
+		"description": "Spring Boot 게시판 시스템의 모든 API 엔드포인트 테스트용 Postman Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 인증 (Authentication)",
+			"item": [
+				{
+					"name": "회원가입",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"테스트 사용자\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"age\": 25\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "JWT 로그인",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"admin\",\n  \"password\": \"admin\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "로그인 상태 확인",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👥 사용자 관리 (User Management)",
+			"item": [
+				{
+					"name": "모든 사용자 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "사용자 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"새 사용자\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"age\": 30,\n  \"role\": \"USER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					}
+				},
+				{
+					"name": "사용자 ID로 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "1"]
+						}
+					}
+				},
+				{
+					"name": "사용자 검색",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/search?name=테스트&minAge=20&maxAge=30",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", "search"],
+							"query": [
+								{
+									"key": "name",
+									"value": "테스트"
+								},
+								{
+									"key": "minAge",
+									"value": "20"
+								},
+								{
+									"key": "maxAge",
+									"value": "30"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📝 게시판 (Posts)",
+			"item": [
+				{
+					"name": "게시글 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"테스트 게시글\",\n  \"content\": \"이것은 테스트 게시글입니다.\",\n  \"category\": \"GENERAL\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts?authorId=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts"],
+							"query": [
+								{
+									"key": "authorId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "모든 게시글 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts"]
+						}
+					}
+				},
+				{
+					"name": "게시글 상세 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "1"]
+						}
+					}
+				},
+				{
+					"name": "게시글 검색",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/search?keyword=테스트",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "search"],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "테스트"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "고급 검색 (페이징)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"keyword\": \"Spring\",\n  \"category\": \"TECH\",\n  \"sortBy\": \"latest\",\n  \"page\": 0,\n  \"size\": 10\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts/search",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "search"]
+						}
+					}
+				},
+				{
+					"name": "좋아요 증가",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/1/like",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "1", "like"]
+						}
+					}
+				},
+				{
+					"name": "조회수 증가",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/1/view",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "1", "view"]
+						}
+					}
+				},
+				{
+					"name": "인기 게시글 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/popular",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", "popular"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💬 댓글 (Comments)",
+			"item": [
+				{
+					"name": "댓글 생성",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"content\": \"테스트 댓글입니다.\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/comments/posts/1?authorId=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "comments", "posts", "1"],
+							"query": [
+								{
+									"key": "authorId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "게시글의 댓글 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/comments/posts/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "comments", "posts", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📁 파일 업로드 (File Upload)",
+			"item": [
+				{
+					"name": "파일 업로드",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "postId",
+									"value": "1",
+									"type": "text"
+								},
+								{
+									"key": "userId",
+									"value": "1",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/files/upload",
+							"host": ["{{base_url}}"],
+							"path": ["api", "files", "upload"]
+						}
+					}
+				},
+				{
+					"name": "게시글의 파일 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/files/post/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "files", "post", "1"]
+						}
+					}
+				},
+				{
+					"name": "파일 다운로드",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/files/download/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "files", "download", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔔 알림 (Notifications)",
+			"item": [
+				{
+					"name": "실시간 알림 테스트",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notify/test-realtime",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notify", "test-realtime"]
+						}
+					}
+				},
+				{
+					"name": "알림 전송",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notify?message=테스트 알림입니다!",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notify"],
+							"query": [
+								{
+									"key": "message",
+									"value": "테스트 알림입니다!"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "최근 알림 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notify/recent",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notify", "recent"]
+						}
+					}
+				},
+				{
+					"name": "알림 개수 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notify/count",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notify", "count"]
+						}
+					}
+				},
+				{
+					"name": "WebSocket 세션 정보",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/notify/sessions",
+							"host": ["{{base_url}}"],
+							"path": ["api", "notify", "sessions"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "⭐ 추가 기능 (Additional Features)",
+			"item": [
+				{
+					"name": "북마크 추가",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/bookmarks?userId=1&postId=1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "bookmarks"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								},
+								{
+									"key": "postId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "태그 자동완성",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tags/autocomplete?keyword=Spring",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tags", "autocomplete"],
+							"query": [
+								{
+									"key": "keyword",
+									"value": "Spring"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "신고 등록",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reporterId\": 1,\n  \"postId\": 1,\n  \"reason\": \"부적절한 내용\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/reports",
+							"host": ["{{base_url}}"],
+							"path": ["api", "reports"]
+						}
+					}
+				},
+				{
+					"name": "통계 조회",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/stats/summary",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stats", "summary"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 관리자 (Admin)",
+			"item": [
+				{
+					"name": "관리자 계정 생성",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/create-admin",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "create-admin"]
+						}
+					}
+				},
+				{
+					"name": "모든 사용자 조회 (관리자)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "users"]
+						}
+					}
+				},
+				{
+					"name": "초기화 상태 확인",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/admin/init-status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "admin", "init-status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🗄️ 데이터베이스 (Database)",
+			"item": [
+				{
+					"name": "데이터베이스 정보",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/database/info",
+							"host": ["{{base_url}}"],
+							"path": ["api", "database", "info"]
+						}
+					}
+				},
+				{
+					"name": "데이터베이스 상태",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/database/status",
+							"host": ["{{base_url}}"],
+							"path": ["api", "database", "status"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 모니터링 (Monitoring)",
+			"item": [
+				{
+					"name": "헬스 체크",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "health"]
+						}
+					}
+				},
+				{
+					"name": "애플리케이션 정보",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/info",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "info"]
+						}
+					}
+				},
+				{
+					"name": "메트릭스",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/metrics",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "metrics"]
+						}
+					}
+				},
+				{
+					"name": "환경 설정",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/env",
+							"host": ["{{base_url}}"],
+							"path": ["actuator", "env"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🌐 기본 API (Basic API)",
+			"item": [
+				{
+					"name": "Hello API",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/hello",
+							"host": ["{{base_url}}"],
+							"path": ["api", "hello"]
+						}
+					}
+				},
+				{
+					"name": "홈 API",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/",
+							"host": ["{{base_url}}"],
+							"path": ["api", ""]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+} 

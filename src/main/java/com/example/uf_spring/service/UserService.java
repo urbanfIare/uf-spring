@@ -3,22 +3,19 @@ package com.example.uf_spring.service;
 import com.example.uf_spring.model.User;
 import com.example.uf_spring.model.Role;
 import com.example.uf_spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     
-    @Autowired
-    private UserRepository userRepository;
-    
-    public UserService() {
-        System.out.println("🔧 UserService 생성자 호출됨");
-    }
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
     
     // 애플리케이션 시작 후 샘플 데이터 초기화
     public void initializeSampleData() {
@@ -29,7 +26,6 @@ public class UserService {
             System.out.println("➕ 새 사용자 생성 중...");
             
             // BCrypt로 비밀번호 암호화
-            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
             String encodedPassword = passwordEncoder.encode("admin");
             
             User newUser = new User("노경환", "admin", encodedPassword, 31, Role.ADMIN);

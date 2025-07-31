@@ -89,4 +89,6 @@ public class Post {
     public void updateModifiedTime() {
         this.updatedAt = LocalDateTime.now();
     }
+    
+
 } 

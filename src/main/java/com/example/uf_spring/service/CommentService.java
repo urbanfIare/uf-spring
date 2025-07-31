@@ -7,7 +7,7 @@ import com.example.uf_spring.model.User;
 import com.example.uf_spring.repository.CommentRepository;
 import com.example.uf_spring.repository.PostRepository;
 import com.example.uf_spring.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +16,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class CommentService {
 
-    @Autowired
-    private CommentRepository commentRepository;
-    
-    @Autowired
-    private PostRepository postRepository;
-    
-    @Autowired
-    private UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
 
     // 댓글 생성
     public CommentDto.Response createComment(Long postId, CommentDto.CreateRequest request, Long authorId) {

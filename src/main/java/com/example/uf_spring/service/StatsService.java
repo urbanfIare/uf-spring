@@ -5,7 +5,7 @@ import com.example.uf_spring.model.PostCategory;
 import com.example.uf_spring.model.Tag;
 import com.example.uf_spring.repository.PostRepository;
 import com.example.uf_spring.repository.TagRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -14,11 +14,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class StatsService {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private TagRepository tagRepository;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
 
     public Map<String, Object> getSummary() {
         Map<String, Object> result = new LinkedHashMap<>();

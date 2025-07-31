@@ -43,4 +43,6 @@ public class Report {
         RESOLVED, // 처리됨
         REJECTED // 기각
     }
+    
+
 } 
