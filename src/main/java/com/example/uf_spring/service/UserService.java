@@ -28,11 +28,11 @@ public class UserService {
             // BCrypt로 비밀번호 암호화
             String encodedPassword = passwordEncoder.encode("admin");
             
-            User newUser = new User("노경환", "admin", encodedPassword, 31, Role.ADMIN);
+            User newUser = new User("관리자", "admin", encodedPassword, 31, Role.ADMIN);
             User savedUser = userRepository.save(newUser);
             
             System.out.println("✅ admin 계정이 생성되었습니다!");
-            System.out.println("👤 사용자명: admin");
+            System.out.println("📧 이메일: admin");
             System.out.println("🔑 비밀번호: admin");
             System.out.println("🆔 생성된 사용자 ID: " + savedUser.getId());
             System.out.println("🔐 암호화된 비밀번호: " + encodedPassword);

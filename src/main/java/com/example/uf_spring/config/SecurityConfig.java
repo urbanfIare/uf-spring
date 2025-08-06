@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
@@ -36,6 +37,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/hello", "/api/", "/h2-console/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
                 
+                // Static 파일 접근 허용
+                .requestMatchers("/static/**", "/*.html", "/login-test-simple.html").permitAll()
+                .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                
                 // 관리자 전용 API
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/reports/**").hasAnyRole("ADMIN", "MODERATOR")
@@ -47,12 +52,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/files/**").authenticated()
                 .requestMatchers("/api/bookmarks/**").authenticated()
                 .requestMatchers("/api/notifications/**").authenticated()
+                .requestMatchers("/api/diaries/**").authenticated()
                 
                 // 나머지 모든 요청은 인증 필요
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .headers(headers -> headers.frameOptions().disable()); // H2 콘솔을 위한 설정
+            .headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable())); // H2 콘솔을 위한 설정
         
         return http.build();
     }

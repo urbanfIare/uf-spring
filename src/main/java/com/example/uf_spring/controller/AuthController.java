@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,6 +24,7 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "인증 관리", description = "회원가입, 로그인, 인증 상태 확인 API")
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
@@ -37,8 +39,10 @@ public class AuthController {
     })
     public ResponseEntity<?> register(
             @Parameter(description = "회원가입 정보", required = true) @RequestBody RegisterRequest request) {
+        log.info("회원가입 요청 받음: {}", request.getEmail());
         try {
             User newUser = authService.register(request);
+            log.info("회원가입 성공: {}", newUser.getEmail());
             
             Map<String, Object> response = new HashMap<>();
             response.put("message", "회원가입이 완료되었습니다!");
@@ -52,6 +56,7 @@ public class AuthController {
             
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            log.error("회원가입 실패: {}", e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -66,8 +71,10 @@ public class AuthController {
     })
     public ResponseEntity<?> login(
             @Parameter(description = "로그인 정보", required = true) @RequestBody LoginRequest request) {
+        log.info("로그인 요청 받음: {}", request.getEmail());
         try {
             User user = authService.authenticate(request.getEmail(), request.getPassword());
+            log.info("로그인 성공: {}", user.getEmail());
             
             // JWT 토큰 생성
             String token = jwtConfig.generateToken(user.getEmail(), user.getRole().name());
@@ -85,6 +92,7 @@ public class AuthController {
             
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
+            log.error("로그인 실패: {} - {}", request.getEmail(), e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
@@ -96,6 +104,39 @@ public class AuthController {
         @ApiResponse(responseCode = "200", description = "인증 API 정상 작동")
     })
     public ResponseEntity<?> getAuthStatus() {
+        log.info("인증 상태 확인 요청");
         return ResponseEntity.ok(Map.of("message", "인증 API가 정상적으로 작동합니다!"));
+    }
+
+    // 테스트용 관리자 계정 생성
+    @PostMapping("/create-test-admin")
+    @Operation(summary = "테스트용 관리자 계정 생성", description = "테스트를 위한 관리자 계정을 생성합니다.")
+    public ResponseEntity<?> createTestAdmin() {
+        try {
+            RegisterRequest adminRequest = new RegisterRequest();
+            adminRequest.setName("관리자");
+            adminRequest.setEmail("admin");
+            adminRequest.setPassword("admin");
+            adminRequest.setAge(30);
+            
+            User adminUser = authService.register(adminRequest);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "테스트용 관리자 계정이 생성되었습니다!");
+            response.put("user", Map.of(
+                "id", adminUser.getId(),
+                "name", adminUser.getName(),
+                "email", adminUser.getEmail(),
+                "role", adminUser.getRole()
+            ));
+            response.put("login_info", Map.of(
+                "email", "admin",
+                "password", "admin"
+            ));
+            
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 } 

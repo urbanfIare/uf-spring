@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 테스트</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        button { width: 100%; padding: 12px; background: #3182f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        button:hover { background: #1b64da; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 8px; }
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #dc2626; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 로그인 테스트</h1>
+        
+        <div class="form-group">
+            <label>이메일:</label>
+            <input type="email" id="email" value="admin" placeholder="이메일을 입력하세요">
+        </div>
+        
+        <div class="form-group">
+            <label>비밀번호:</label>
+            <input type="password" id="password" value="admin" placeholder="비밀번호를 입력하세요">
+        </div>
+        
+        <button onclick="testLogin()">로그인 테스트</button>
+        <button onclick="createAdmin()" style="background: #059669; margin-top: 10px;">관리자 계정 생성</button>
+        <button onclick="getAllUsers()" style="background: #7c3aed; margin-top: 10px;">사용자 목록 조회</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                console.log('로그인 시도:', { email, password });
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                console.log('응답:', data);
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 로그인 성공!</h3>
+                        <p><strong>사용자:</strong> ${data.user.name}</p>
+                        <p><strong>이메일:</strong> ${data.user.email}</p>
+                        <p><strong>역할:</strong> ${data.user.role}</p>
+                        <p><strong>토큰:</strong> ${data.token.substring(0, 50)}...</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 로그인 실패</h3>
+                        <p>${data.error || data.message || '알 수 없는 오류'}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('오류:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 네트워크 오류</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        async function createAdmin() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch(`${API_BASE}/admin/create-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('관리자 생성 응답:', data);
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ 관리자 계정 생성 성공!</h3>
+                        <p>${data.message}</p>
+                        <p><strong>이메일:</strong> admin</p>
+                        <p><strong>비밀번호:</strong> admin</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 생성 실패</h3>
+                        <p>${data.error || data.message}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('오류:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 네트워크 오류</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+        
+        async function getAllUsers() {
+            const resultDiv = document.getElementById('result');
+            
+            try {
+                const response = await fetch(`${API_BASE}/users`);
+                const data = await response.json();
+                console.log('사용자 목록:', data);
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>👥 사용자 목록 (총 ${data.length}명)</h3>
+                        ${data.map(user => `
+                            <p><strong>${user.name}</strong> (${user.email}) - ${user.role}</p>
+                        `).join('')}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ 조회 실패</h3>
+                        <p>${data.error || data.message}</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('오류:', error);
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ 네트워크 오류</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html> 
